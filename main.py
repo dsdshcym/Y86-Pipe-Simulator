@@ -159,11 +159,24 @@ def get_code(string):
 
 def init(fin):
     p = 0x000
+    bin_code = ''
     for line in fin:
         addr, code = get_addr(line), get_code(line)
+        bin_len = len(bin_code)
+        if addr is not None:
+            addr *= 2
+            if addr < bin_len:
+                print("Init Error")
+                sys.exit(1)
+            if code is not None:
+                if addr > bin_len:
+                    bin_code += '0' * (addr - bin_len)
+                bin_code += code
+    return bin_code
 
 def main():
     fin = open('asum.yo', 'r')
-    init(fin)
+    bin_code = ''
+    bin_code = init(fin)
 
 main()
