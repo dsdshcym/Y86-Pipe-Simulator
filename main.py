@@ -39,11 +39,11 @@ class Y86Processor():
         self.ALUXOR  = 0x3
 
         ## Symbolic representation of Y86 status
-        self.SBUB    = 'STAT_BUB' # Bubble in stage
-        self.SAOK    = 'STAT_AOK' # Normal execution
-        self.SADR    = 'STAT_ADR' # Invalid memory address
-        self.SINS    = 'STAT_INS' # Invalid instruction
-        self.SHLT    = 'STAT_HLT' # Halt instruction encountered
+        self.SBUB    = 'BUB' # Bubble in stage
+        self.SAOK    = 'AOK' # Normal execution
+        self.SADR    = 'ADR' # Invalid memory address
+        self.SINS    = 'INS' # Invalid instruction
+        self.SHLT    = 'HLT' # Halt instruction encountered
 
         ## Jump function representations
         self.FJMP    = 0x0
