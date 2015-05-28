@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+import io
+import re
+import sys
+
 # Global constants
 
 ## Symbolic representation of Y86 Instruction Codes
@@ -137,3 +141,29 @@ registers = {
     0x7: 0,
     0xf: 0
 }
+
+addr_re = re.compile(r"(?<=0x).*?(?=:)")
+code_re = re.compile(r"(?<=:\s)\w+")
+
+def get_addr(string):
+    search_result = addr_re.search(string)
+    if search_result:
+        return int(search_result.group(0), 16)
+    return None
+
+def get_code(string):
+    search_result = code_re.search(string)
+    if search_result:
+        return search_result.group(0)
+    return None
+
+def init(fin):
+    p = 0x000
+    for line in fin:
+        addr, code = get_addr(line), get_code(line)
+
+def main():
+    fin = open('asum.yo', 'r')
+    init(fin)
+
+main()
