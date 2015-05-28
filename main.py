@@ -4,143 +4,151 @@ import io
 import re
 import sys
 
-# Global constants
+class Y86Processor():
+    def __init__(self, bin_code):
+        # Global constants
 
-## Symbolic representation of Y86 Instruction Codes
-INOP    = 0x0
-IHALT   = 0x1
-IRRMOVL = 0x2
-IIRMOVL = 0x3
-IRMMOVL = 0x4
-IMRMOVL = 0x5
-IOPL    = 0x6
-IJXX    = 0x7
-ICALL   = 0x8
-IRET    = 0x9
-IPUSHL  = 0xa
-IPOPL   = 0xb
-IIADDL  = 0xc
-ILEAVE  = 0xd
+        ## Symbolic representation of Y86 Instruction Codes
+        self.INOP    = 0x0
+        self.IHALT   = 0x1
+        self.IRRMOVL = 0x2
+        self.IIRMOVL = 0x3
+        self.IRMMOVL = 0x4
+        self.IMRMOVL = 0x5
+        self.IOPL    = 0x6
+        self.IJXX    = 0x7
+        self.ICALL   = 0x8
+        self.IRET    = 0x9
+        self.IPUSHL  = 0xa
+        self.IPOPL   = 0xb
+        self.IIADDL  = 0xc
+        self.ILEAVE  = 0xd
 
-## Symbolic represenations of Y86 function codes
-FNONE   = 0x0
+        ## Symbolic represenations of Y86 function codes
+        self.FNONE   = 0x0
 
-## Symbolic representation of Y86 Registers referenced
-RESP    = 0x4
-REBP    = 0x5
-RNONE   = 0x8
+        ## Symbolic representation of Y86 Registers referenced
+        self.RESP    = 0x4
+        self.REBP    = 0x5
+        self.RNONE   = 0x8
 
-## ALU Functions referenced explicitly
-ALUADD  = 0x0
-ALUSUB  = 0x1
-ALUAND  = 0x2
-ALUXOR  = 0x3
+        ## ALU Functions referenced explicitly
+        self.ALUADD  = 0x0
+        self.ALUSUB  = 0x1
+        self.ALUAND  = 0x2
+        self.ALUXOR  = 0x3
 
-## Symbolic representation of Y86 status
-SBUB    = 'STAT_BUB' # Bubble in stage
-SAOK    = 'STAT_AOK' # Normal execution
-SADR    = 'STAT_ADR' # Invalid memory address
-SINS    = 'STAT_INS' # Invalid instruction
-SHLT    = 'STAT_HLT' # Halt instruction encountered
+        ## Symbolic representation of Y86 status
+        self.SBUB    = 'STAT_BUB' # Bubble in stage
+        self.SAOK    = 'STAT_AOK' # Normal execution
+        self.SADR    = 'STAT_ADR' # Invalid memory address
+        self.SINS    = 'STAT_INS' # Invalid instruction
+        self.SHLT    = 'STAT_HLT' # Halt instruction encountered
 
-## Jump function representations
-FJMP    = 0x0
-FJLE    = 0x1
-FJL     = 0x2
-FJE     = 0x3
-FJNE    = 0x4
-FJGE    = 0x5
-FJG     = 0x6
+        ## Jump function representations
+        self.FJMP    = 0x0
+        self.FJLE    = 0x1
+        self.FJL     = 0x2
+        self.FJE     = 0x3
+        self.FJNE    = 0x4
+        self.FJGE    = 0x5
+        self.FJG     = 0x6
 
-# Processor Registers initializations
+        # Processor Registers initializations
 
-## Pipeline Register F
-F_stat = SBUB
-F_predPC = 0
+        ## Pipeline Register F
+        self.F_stat = self.SBUB
+        self.F_predPC = 0
 
-## Intermediate Values in Fetch Stage
-f_icode = INOP
-f_ifun = FNONE
-f_valC = 0x0
-f_valP = 0x0
-f_rA = RNONE
-f_rB = RNONE
-f_predPC = 0
-f_stat = SBUB
+        ## Intermediate Values in Fetch Stage
+        self.f_icode = self.INOP
+        self.f_ifun = self.FNONE
+        self.f_valC = 0x0
+        self.f_valP = 0x0
+        self.f_rA = self.RNONE
+        self.f_rB = self.RNONE
+        self.f_predPC = 0
+        self.f_stat = self.SBUB
 
-## Pipeline Register D
-D_stat = SBUB
-D_icode = INOP
-D_ifun = FNONE
-D_rA = RNONE
-D_rB = RNONE
-D_valC = 0x0
-D_valP = 0x0
+        ## Pipeline Register D
+        self.D_stat = self.SBUB
+        self.D_icode = self.INOP
+        self.D_ifun = self.FNONE
+        self.D_rA = self.RNONE
+        self.D_rB = self.RNONE
+        self.D_valC = 0x0
+        self.D_valP = 0x0
 
-## Intermediate Values in Decode Stage
-d_srcA = RNONE
-d_srcB = RNONE
-d_dstE = RNONE
-d_dstM = RNONE
-d_valA = 0x0
-d_valB = 0x0
+        ## Intermediate Values in Decode Stage
+        self.d_srcA = self.RNONE
+        self.d_srcB = self.RNONE
+        self.d_dstE = self.RNONE
+        self.d_dstM = self.RNONE
+        self.d_valA = 0x0
+        self.d_valB = 0x0
 
-## Pipeline Register E
-E_stat = SBUB
-E_icode = INOP
-E_ifun = FNONE
-E_valC = 0x0
-E_valA = 0x0
-E_valB = 0x0
-E_dstE = RNONE
-E_dstM = RNONE
-E_srcA = RNONE
-E_srcB = RNONE
+        ## Pipeline Register E
+        self.E_stat = self.SBUB
+        self.E_icode = self.INOP
+        self.E_ifun = self.FNONE
+        self.E_valC = 0x0
+        self.E_valA = 0x0
+        self.E_valB = 0x0
+        self.E_dstE = self.RNONE
+        self.E_dstM = self.RNONE
+        self.E_srcA = self.RNONE
+        self.E_srcB = self.RNONE
 
-## Intermediate Values in Execute Stage
-e_valE = 0x0
-e_dstE = RNONE
-e_Cnd = False
-e_setcc = False
+        ## Intermediate Values in Execute Stage
+        self.e_valE = 0x0
+        self.e_dstE = self.RNONE
+        self.e_Cnd = False
+        self.e_setcc = False
 
-## Pipeline Register M
-M_stat = SBUB
-M_icode = INOP
-M_ifun = FNONE
-M_Cnd = False   # M_Bch
-M_valE = 0x0
-M_valA = 0x0
-M_dstE = RNONE
-M_dstM = RNONE
+        ## Pipeline Register M
+        self.M_stat = self.SBUB
+        self.M_icode = self.INOP
+        self.M_ifun = self.FNONE
+        self.M_Cnd = False   # M_Bch
+        self.M_valE = 0x0
+        self.M_valA = 0x0
+        self.M_dstE = self.RNONE
+        self.M_dstM = self.RNONE
 
-## Intermediate Values in Memory Stage
-m_valM = 0x0
-m_stat = SBUB
-mem_addr = 0x0
-m_read = False
-dmem_error = False
+        ## Intermediate Values in Memory Stage
+        self.m_valM = 0x0
+        self.m_stat = self.SBUB
+        self.mem_addr = 0x0
+        self.m_read = False
+        self.dmem_error = False
 
-## Pipeline Register W
-W_stat = SBUB
-W_icode = INOP
-W_ifun = FNONE
-W_valE = 0x0
-W_valM = 0x0
-W_dstE = RNONE
-W_dstM = RNONE
+        ## Pipeline Register W
+        self.W_stat = self.SBUB
+        self.W_icode = self.INOP
+        self.W_ifun = self.FNONE
+        self.W_valE = 0x0
+        self.W_valM = 0x0
+        self.W_dstE = self.RNONE
+        self.W_dstM = self.RNONE
 
-# Registers initialization
-registers = {
-    0x0: 0,
-    0x1: 0,
-    0x2: 0,
-    0x3: 0,
-    0x4: 0,
-    0x5: 0,
-    0x6: 0,
-    0x7: 0,
-    0xf: 0
-}
+        # Registers initialization
+        self.registers = {
+            0x0: 0,
+            0x1: 0,
+            0x2: 0,
+            0x3: 0,
+            0x4: 0,
+            0x5: 0,
+            0x6: 0,
+            0x7: 0,
+            0xf: 0
+        }
+
+        self.bin_code = bin_code
+        self.addr_len = len(self.bin_code) / 2 - 1
+
+    def run_processor(self):
+        pass
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
@@ -157,7 +165,8 @@ def get_code(string):
         return search_result.group(0)
     return None
 
-def init(fin):
+def init(input_file):
+    fin = open(input_file, 'r')
     p = 0x000
     bin_code = ''
     for line in fin:
@@ -175,8 +184,9 @@ def init(fin):
     return bin_code
 
 def main():
-    fin = open('asum.yo', 'r')
-    bin_code = ''
-    bin_code = init(fin)
+    input_file = 'asum.yo'
+    bin_code = init(input_file)
+    processor = Y86Processor(bin_code)
+    processor.run_processor()
 
 main()
