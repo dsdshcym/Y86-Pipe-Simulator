@@ -143,6 +143,8 @@ class Y86Processor():
         self.bin_code = bin_code
         self.addr_len = len(self.bin_code) / 2 - 1
 
+        self.cycle = 0
+
     def endian_parser(self, s):
         correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
         ans = int(correct_string, 16)
@@ -236,9 +238,15 @@ class Y86Processor():
         self.F_predPC = self.f_predPC
         self.F_stat = self.f_stat
 
+    def fetch_log(self):
+        print('FETCH:')
+        print('  F_predPC  = 0x%08x' % self.F_predPC)
+
     def run_processor(self):
-        self.fetch_stage()
-        self.fetch_write()
+        for i in range(100):
+            self.fetch_stage()
+            self.fetch_log()
+            self.fetch_write()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
