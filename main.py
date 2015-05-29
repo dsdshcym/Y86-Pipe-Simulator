@@ -4,6 +4,9 @@ import io
 import re
 import sys
 
+TMAX = 2**31-1
+TMIN = -TMAX -1
+
 class Y86Processor():
     def __init__(self, bin_code, output_file):
         # Global constants
@@ -100,7 +103,6 @@ class Y86Processor():
         self.e_valE = 0x0
         self.e_dstE = self.RNONE
         self.e_Cnd = False
-        self.e_setcc = False
 
         ## Pipeline Register M
         self.M_stat = self.SBUB
@@ -138,6 +140,13 @@ class Y86Processor():
             0x5: 0,
             0x6: 0,
             0x7: 0,
+        }
+
+        # Conditions registers
+        self.conditions = {
+            'ZF': 0,
+            'SF': 0,
+            'OF': 0,
         }
 
         self.bin_code = bin_code
@@ -238,7 +247,7 @@ class Y86Processor():
         F_bubble = False
         F_stall = (self.IRET in (self.D_icode, self.E_icode, self.M_icode)) or \
                   ((self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
-                   (self.e_dstM in (self.d_srcA, self.d_srcB)))
+                   (self.E_dstM in (self.d_srcA, self.d_srcB)))
         if F_stall:
             return
         self.F_predPC = self.f_predPC
@@ -342,19 +351,132 @@ class Y86Processor():
         self.output_file.write('\tD_valP  	= 0x%08x\n' % self.D_valP)
         self.output_file.write('\n')
 
+    def execute_stage(self):
+        self.e_valE = 0x0
+        self.e_dstE = self.RNONE
+        self.e_Cnd = False
+
+        aluA = 0
+        aluB = 0
+        alufun = self.ALUADD
+
+        if self.E_icode in (self.IRRMOVL, self.IOPL):
+            aluA = self.E_valA
+        elif self.E_icode in (self.IIRMOVL, self.IRMMOVL, self.IMRMOVL):
+            aluA = self.E_valC
+        elif self.E_icode in (self.ICALL, self.IPUSHL):
+            aluA = -4
+        elif self.E_icode in (self.IRET, self.IPOPL):
+            aluA = 4
+
+        if self.E_icode in (self.IRMMOVL, self.IMRMOVL, self.IOPL, self.ICALL, \
+                            self.IPUSHL, self.IRET, self.IPOPL):
+            aluB = self.E_valB
+        elif self.E_icode in (self.IRRMOVL, self.IIRMOVL):
+            aluB = 0
+
+        if self.E_icode == self.IOPL:
+            alufun = self.E_ifun
+
+        set_cc = (self.E_icode == self.IOPL) and \
+                 (self.m_stat not in (self.SADR, self.SINS, self.SHLT)) and \
+                 (self.W_stat not in (self.SADR, self.SINS, self.SHLT))
+
+        alu_result = 0
+
+        if alufun == self.ALUADD:
+            alu_result = aluB + aluA
+        if alufun == self.ALUSUB:
+            alu_result = aluB - aluA
+        if alufun == self.ALUAND:
+            alu_result = aluB & aluA
+        if alufun == self.ALUXOR:
+            alu_result = aluB ^ aluA
+
+        if set_cc:
+            self.conditions['ZF'] = 1 if alu_result == 0 else 0
+            self.conditions['SF'] = 1 if alu_result < 0 else 0
+            self.conditions['OF'] = 1 if (alu_result > TMAX) or (alu_result < TMIN) else 0
+
+        if self.E_icode in (self.IJXX, self.IRRMOVL):
+            zf = self.conditions['ZF']
+            sf = self.conditions['SF']
+            of = self.conditions['OF']
+            if self.E_ifun == self.FJMP:
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJL) and (sf ^ of == 1):
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJLE) and ((sf ^ of) | zf == 1):
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJE) and (zf == 1):
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJNE) and (zf == 0):
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJGE) and (sf ^ of == 0):
+                self.e_Cnd = True
+            if (self.E_ifun == self.FJG) and ((sf ^ of) | zf == 0):
+                self.e_Cnd = True
+
+        self.e_valE = alu_result
+        self.e_dstE = self.RNONE if (self.E_icode == self.IRRMOVL and not self.e_Cnd) else self.E_dstE
+
+    def execute_write(self):
+        E_bubble = (self.E_icode == self.IJXX and not self.e_Cnd) or \
+                   ((self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
+                    (self.E_dstM in (self.d_srcA, self.d_srcB)))
+        if E_bubble:
+            self.E_icode = self.INOP
+            self.E_ifun  = self.FNONE
+            self.E_valC  = 0x0
+            self.E_valA  = 0x0
+            self.E_valB  = 0x0
+            self.E_dstE  = self.RNONE
+            self.E_dstM  = self.RNONE
+            self.E_srcA  = self.RNONE
+            self.E_srcB  = self.RNONE
+            self.E_stat  = self.SBUB
+            return
+
+        self.E_stat  = self.D_stat
+        self.E_icode = self.D_icode
+        self.E_ifun  = self.D_ifun
+        self.E_valC  = self.D_valC
+        self.E_valA  = self.d_valA
+        self.E_valB  = self.d_valB
+        self.E_dstE  = self.d_dstE
+        self.E_dstM  = self.d_dstM
+        self.E_srcA  = self.d_srcA
+        self.E_srcB  = self.d_srcB
+
+    def execute_log(self):
+        self.output_file.write('EXECUTE:\n')
+        self.output_file.write('\tE_icode   = 0x%x:\n' % self.E_icode)
+        self.output_file.write('\tE_ifun    = 0x%x:\n' % self.E_ifun)
+        self.output_file.write('\tE_valC    = 0x%08x:\n' % self.E_valC)
+        self.output_file.write('\tE_valA    = 0x%08x:\n' % self.E_valA)
+        self.output_file.write('\tE_valB    = 0x%08x:\n' % self.E_valB)
+        self.output_file.write('\tE_dstE    = 0x%x:\n' % self.E_dstE)
+        self.output_file.write('\tE_dstM    = 0x%x:\n' % self.E_dstM)
+        self.output_file.write('\tE_srcA    = 0x%x:\n' % self.E_srcA)
+        self.output_file.write('\tE_srcB    = 0x%x:\n' % self.E_srcB)
+        self.output_file.write('\n')
+
     def run_processor(self):
         for i in range(100):
             self.cycle += 1
             self.cycle_log()
 
-            self.fetch_write()
+            self.execute_write()
             self.decode_write()
+            self.fetch_write()
 
             self.fetch_stage()
             self.decode_stage()
+            self.execute_stage()
 
             self.fetch_log()
             self.decode_log()
+            self.execute_log()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
