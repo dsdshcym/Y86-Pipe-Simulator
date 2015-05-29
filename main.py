@@ -57,16 +57,6 @@ class Y86Processor():
         self.F_stat = self.SBUB
         self.F_predPC = 0
 
-        ## Intermediate Values in Fetch Stage
-        self.f_icode = self.INOP
-        self.f_ifun = self.FNONE
-        self.f_valC = 0x0
-        self.f_valP = 0x0
-        self.f_rA = self.RNONE
-        self.f_rB = self.RNONE
-        self.f_predPC = 0
-        self.f_stat = self.SBUB
-
         ## Pipeline Register D
         self.D_stat = self.SBUB
         self.D_icode = self.INOP
@@ -155,13 +145,15 @@ class Y86Processor():
         self.output_file.write('Cycle_%d\n--------------------\n' % self.cycle)
 
     def fetch_stage(self):
-        ## Initialization
+        ## Intermediate Values in Fetch Stage
         self.f_icode = self.INOP
         self.f_ifun = self.FNONE
-        self.f_rA = self.RNONE
-        self.f_rB = self.RNONE
         self.f_valC = 0x0
         self.f_valP = 0x0
+        self.f_rA = self.RNONE
+        self.f_rB = self.RNONE
+        self.f_predPC = 0
+        self.f_stat = self.SBUB
 
         ## What address should instruction be fetched at
         f_pc = self.F_predPC # Default: Use predicted value of PC
