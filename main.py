@@ -21,15 +21,12 @@ class Y86Processor():
         self.IRET    = 0x9
         self.IPUSHL  = 0xa
         self.IPOPL   = 0xb
-        self.IIADDL  = 0xc
-        self.ILEAVE  = 0xd
 
         ## Symbolic represenations of Y86 function codes
         self.FNONE   = 0x0
 
         ## Symbolic representation of Y86 Registers referenced
         self.RESP    = 0x4
-        self.REBP    = 0x5
         self.RNONE   = 0x8
 
         ## ALU Functions referenced explicitly
@@ -141,7 +138,6 @@ class Y86Processor():
             0x5: 0,
             0x6: 0,
             0x7: 0,
-            0xf: 0
         }
 
         self.bin_code = bin_code
