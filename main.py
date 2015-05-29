@@ -143,6 +143,11 @@ class Y86Processor():
         self.bin_code = bin_code
         self.addr_len = len(self.bin_code) / 2 - 1
 
+    def endian_parser(self, s):
+        correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
+        ans = int(correct_string, 16)
+        return ans
+
     def fetch_stage(self):
         ## Initialization
         self.f_icode = self.INOP
@@ -202,7 +207,7 @@ class Y86Processor():
                     if (self.f_rA not in self.registers) or (self.f_rB not in self.registers):
                         raise IndexError
                 if need_valC:
-                    self.f_valC = endian_parser(self.bin_code[bin_p: bin_p+8])
+                    self.f_valC = self.endian_parser(self.bin_code[bin_p: bin_p+8])
                     bin_p += 8
                     f_pc += 4
             except IndexError:
