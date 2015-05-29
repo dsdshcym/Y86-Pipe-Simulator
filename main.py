@@ -66,14 +66,6 @@ class Y86Processor():
         self.D_valC = 0x0
         self.D_valP = 0x0
 
-        ## Intermediate Values in Decode Stage
-        self.d_srcA = self.RNONE
-        self.d_srcB = self.RNONE
-        self.d_dstE = self.RNONE
-        self.d_dstM = self.RNONE
-        self.d_valA = 0x0
-        self.d_valB = 0x0
-
         ## Pipeline Register E
         self.E_stat = self.SBUB
         self.E_icode = self.INOP
@@ -236,7 +228,100 @@ class Y86Processor():
 
     def fetch_log(self):
         self.output_file.write('FETCH:\n')
-        self.output_file.write('  F_predPC  = 0x%08x\n' % self.F_predPC)
+        self.output_file.write('\tF_predPC  = 0x%08x\n' % self.F_predPC)
+        self.output_file.write('\n')
+
+    def decode_stage(self):
+        ## Intermediate Values in Decode Stage
+        self.d_srcA = self.RNONE
+        self.d_srcB = self.RNONE
+        self.d_dstE = self.RNONE
+        self.d_dstM = self.RNONE
+        self.d_valA = 0x0
+        self.d_valB = 0x0
+
+        if self.D_icode in (self.IRRMOVL, self.IRMMOVL, self.IOPL, self.IPUSHL):
+            self.d_srcA = self.D_rA
+        elif self.D_icode in (self.IPOPL, self.IRET):
+            self.d_srcA = self.RESP
+
+        if self.D_icode in (self.IOPL, self.IRMMOVL, self.IMRMOVL):
+            self.d_srcB = self.D_rB
+        elif self.D_icode in (self.IPUSHL, self.IPOPL, self.ICALL, self.IRET):
+            self.d_srcB = self.RESP
+
+        if self.D_icode in (self.IRRMOVL, self.IIRMOVL, self.IOPL):
+            self.d_dstE = self.D_rB
+        elif self.D_icode in (self.IPUSHL, self.IPOPL, self.ICALL, self.IRET):
+            self.d_dstE = self.RESP
+
+        if self.D_icode in (self.IMRMOVL, self.IPOPL):
+            self.d_dstM = self.D_rA
+
+        if self.D_icode in (self.ICALL, self.IJXX):
+            self.d_valA = self.D_valP
+        elif self.d_srcA == self.e_dstE:
+            self.d_valA = self.e_valE
+        elif self.d_srcA == self.M_dstM:
+            self.d_valA = self.m_valM
+        elif self.d_srcA == self.M_dstE:
+            self.d_valA = self.M_valE
+        elif self.d_srcA == self.W_dstM:
+            self.d_valA = self.W_valM
+        elif self.d_srcA == self.W_dstE:
+            self.d_valA = self.W_valE
+        else:
+            self.d_valA = self.registers[self.d_srcA]
+
+        if self.d_srcB == self.e_dstE:
+            self.d_valB = self.e_valE
+        elif self.d_srcB == self.M_dstM:
+            self.d_valB = self.m_valM
+        elif self.d_srcB == self.M_dstE:
+            self.d_valB = self.M_valE
+        elif self.d_srcB == self.W_dstM:
+            self.d_valB = self.W_valM
+        elif self.d_srcB == self.W_dstE:
+            self.d_valB = self.W_valE
+        else:
+            self.d_valB = self.registers[self.d_srcB]
+
+    def decode_write(self):
+        D_stall = (self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
+                  (self.E_dstM in (self.d_srcA, self.d_srcB))
+        if D_stall:
+            return
+
+        D_bubble = (self.E_icode == self.IJXX and (not self.e_Cnd)) or \
+                   ((not ((self.E_icode in (self.IMRMOVL, self.IPOPL)) \
+                          and (self.E_dstM in (self.d_srcA, self.d_srcB)))) \
+                    and (self.IRET in (self.D_icode, self.E_icode, self.M_icode)))
+        if D_bubble:
+            self.D_icode = self.INOP
+            self.D_ifun  = self.FNONE
+            self.D_rA    = self.RNONE
+            self.D_rB    = self.RNONE
+            self.D_valC  = 0x0
+            self.D_valP  = 0x0
+            self.D_stat  = self.SBUB
+            return
+
+        self.D_stat  = self.f_stat
+        self.D_icode = self.f_icode
+        self.D_ifun  = self.f_ifun
+        self.D_rA    = self.f_rA
+        self.D_rB    = self.f_rB
+        self.D_valC  = self.f_valC
+        self.D_valP  = self.f_valP
+
+    def decode_log(self):
+        self.output_file.write('DECODE:\n')
+        self.output_file.write('\tD_icode  	= 0x%x\n' % self.D_icode)
+        self.output_file.write('\tD_ifun  	= 0x%x\n' % self.D_ifun)
+        self.output_file.write('\tD_rA  	= 0x%x\n' % self.D_rA)
+        self.output_file.write('\tD_rB  	= 0x%x\n' % self.D_rB)
+        self.output_file.write('\tD_valC  	= 0x%08x\n' % self.D_valC)
+        self.output_file.write('\tD_valP  	= 0x%08x\n' % self.D_valP)
         self.output_file.write('\n')
 
     def run_processor(self):
@@ -246,6 +331,9 @@ class Y86Processor():
             self.fetch_stage()
             self.fetch_log()
             self.fetch_write()
+            self.decode_write()
+            self.decode_stage()
+            self.decode_log()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
