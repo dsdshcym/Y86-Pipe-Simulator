@@ -204,7 +204,8 @@ class Y86Processor():
                     self.f_rB = int(self.bin_code[bin_p+1], 16)
                     bin_p += 2
                     f_pc += 1
-                    if (self.f_rA not in self.registers) or (self.f_rB not in self.registers):
+                    if ((self.f_rA not in self.registers) and (self.f_rA != self.RNONE))\
+                       or ((self.f_rB not in self.registers) and (self.f_rB != self.RNONE)):
                         raise IndexError
                 if need_valC:
                     self.f_valC = self.endian_parser(self.bin_code[bin_p: bin_p+8])
@@ -213,8 +214,8 @@ class Y86Processor():
             except IndexError:
                 imem_error = True
 
-        f_valP = f_pc
-        f_predPC = self.f_valC if self.f_icode in (self.IJXX, self.ICALL) else f_valP
+        self.f_valP = f_pc
+        self.f_predPC = self.f_valC if self.f_icode in (self.IJXX, self.ICALL) else self.f_valP
 
         # Determine status code for fetched instruction
         self.f_stat = self.SAOK # Default
