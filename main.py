@@ -5,7 +5,7 @@ import re
 import sys
 
 class Y86Processor():
-    def __init__(self, bin_code):
+    def __init__(self, bin_code, output_file):
         # Global constants
 
         ## Symbolic representation of Y86 Instruction Codes
@@ -141,14 +141,18 @@ class Y86Processor():
         }
 
         self.bin_code = bin_code
+        self.output_file = output_file
         self.addr_len = len(self.bin_code) / 2 - 1
 
-        self.cycle = 0
+        self.cycle = -1
 
     def endian_parser(self, s):
         correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
         ans = int(correct_string, 16)
         return ans
+
+    def cycle_log(self):
+        self.output_file.write('Cycle_%d\n--------------------\n' % self.cycle)
 
     def fetch_stage(self):
         ## Initialization
@@ -239,11 +243,14 @@ class Y86Processor():
         self.F_stat = self.f_stat
 
     def fetch_log(self):
-        print('FETCH:')
-        print('  F_predPC  = 0x%08x' % self.F_predPC)
+        self.output_file.write('FETCH:\n')
+        self.output_file.write('  F_predPC  = 0x%08x\n' % self.F_predPC)
+        self.output_file.write('\n')
 
     def run_processor(self):
         for i in range(100):
+            self.cycle += 1
+            self.cycle_log()
             self.fetch_stage()
             self.fetch_log()
             self.fetch_write()
@@ -283,8 +290,9 @@ def init(input_file):
 
 def main():
     input_file = 'asum.yo'
+    output_file = open('asum.out', 'w')
     bin_code = init(input_file)
-    processor = Y86Processor(bin_code)
+    processor = Y86Processor(bin_code, output_file)
     processor.run_processor()
 
 main()
