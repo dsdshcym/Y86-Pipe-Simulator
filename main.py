@@ -143,8 +143,85 @@ class Y86Processor():
         self.bin_code = bin_code
         self.addr_len = len(self.bin_code) / 2 - 1
 
+    def fetch_stage(self):
+        ## Initialization
+        self.f_icode = self.INOP
+        self.f_ifun = self.FNONE
+        self.f_rA = self.RNONE
+        self.f_rB = self.RNONE
+        self.f_valC = 0x0
+        self.f_valP = 0x0
+
+        ## What address should instruction be fetched at
+        f_pc = self.F_predPC # Default: Use predicted value of PC
+        if (self.M_icode == self.IJXX) and (not self.M_Cnd):
+            f_pc = self.M_valA # Mispredicted branch. Fetch at incremented PC
+        elif (self.W_icode == self.IRET):
+            f_pc = self.W_valM # Completion of RET instruction.
+
+        saved_pc = f_pc
+        bin_p = f_pc * 2
+        imem_error = False
+
+        ## Check if imem_error
+        if (f_pc > self.addr_len) or (f_pc < 0):
+            imem_error = True
+        else:
+            imem_code = int(self.bin_code[bin_p], 16)
+            imem_ifun = int(self.bin_code[bin_p+1], 16)
+            bin_p += 2
+            f_pc += 1
+
+        ## Determine icode of fetched instruction
+        self.f_icode = self.INOP if imem_error else imem_code
+        ## Determine ifun
+        self.f_ifun = self.FNONE if imem_error else imem_ifun
+
+        # Is instruction valid?
+        instr_valid = self.f_ifun in (self.INOP, self.IHALT, self.IRRMOVL, \
+                                      self.IIRMOVL, self.IRMMOVL, self.IMRMOVL, \
+                                      self.IOPL, self.IJXX, self.ICALL, \
+                                      self.IRET, self.IPUSHL, self.IPOPL)
+
+        # Does fetched instruction require a regid byte?
+        need_regids = self.f_icode in (self.IRRMOVL, self.IOPL, self.IPUSHL, \
+                                       self.IPOPL, self.IIRMOVL, self.IRMMOVL, \
+                                       self.IMRMOVL)
+
+        # Does fetched instruction require a constant word?
+        need_valC = self.f_icode in (self.IIRMOVL, self.IRMMOVL, self.IMRMOVL, \
+                                     self.IJXX, self.ICALL)
+
+        if instr_valid:
+            try:
+                if need_regids:
+                    self.f_rA = int(self.bin_code[bin_p], 16)
+                    self.f_rB = int(self.bin_code[bin_p+1], 16)
+                    bin_p += 2
+                    f_pc += 1
+                    if (self.f_rA not in self.registers) or (self.f_rB not in self.registers):
+                        raise IndexError
+                if need_valC:
+                    self.f_valC = endian_parser(self.bin_code[bin_p: bin_p+8])
+                    bin_p += 8
+                    f_pc += 4
+            except IndexError:
+                imem_error = True
+
+        f_valP = f_pc
+        f_predPC = self.f_valC if self.f_icode in (self.IJXX, self.ICALL) else f_valP
+
+        # Determine status code for fetched instruction
+        self.f_stat = self.SAOK # Default
+        if self.f_icode == self.IHALT:
+            self.f_stat = self.SHLT
+        if not instr_valid:
+            self.f_stat = self.SINS
+        if imem_error:
+            self.f_stat = self.SADR
+
     def run_processor(self):
-        pass
+        self.fetch_stage()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
