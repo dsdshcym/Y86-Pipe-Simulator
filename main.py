@@ -57,6 +57,16 @@ class Y86Processor():
         self.F_stat = self.SBUB
         self.F_predPC = 0
 
+        ## Intermediate Values in Fetch Stage
+        self.f_icode = self.INOP
+        self.f_ifun = self.FNONE
+        self.f_valC = 0x0
+        self.f_valP = 0x0
+        self.f_rA = self.RNONE
+        self.f_rB = self.RNONE
+        self.f_predPC = 0
+        self.f_stat = self.SBUB
+
         ## Pipeline Register D
         self.D_stat = self.SBUB
         self.D_icode = self.INOP
@@ -65,6 +75,14 @@ class Y86Processor():
         self.D_rB = self.RNONE
         self.D_valC = 0x0
         self.D_valP = 0x0
+
+        ## Intermediate Values in Decode Stage
+        self.d_srcA = self.RNONE
+        self.d_srcB = self.RNONE
+        self.d_dstE = self.RNONE
+        self.d_dstM = self.RNONE
+        self.d_valA = 0x0
+        self.d_valB = 0x0
 
         ## Pipeline Register E
         self.E_stat = self.SBUB
@@ -328,11 +346,14 @@ class Y86Processor():
         for i in range(100):
             self.cycle += 1
             self.cycle_log()
-            self.fetch_stage()
-            self.fetch_log()
+
             self.fetch_write()
             self.decode_write()
+
+            self.fetch_stage()
             self.decode_stage()
+
+            self.fetch_log()
             self.decode_log()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
