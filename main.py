@@ -225,8 +225,19 @@ class Y86Processor():
         if imem_error:
             self.f_stat = self.SADR
 
+    def fetch_write(self):
+        F_bubble = False
+        F_stall = (self.IRET in (self.D_icode, self.E_icode, self.M_icode)) or \
+                  ((self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
+                   (self.e_dstM in (self.d_srcA, self.d_srcB)))
+        if F_stall:
+            return
+        self.F_predPC = self.f_predPC
+        self.F_stat = self.f_stat
+
     def run_processor(self):
         self.fetch_stage()
+        self.fetch_write()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
