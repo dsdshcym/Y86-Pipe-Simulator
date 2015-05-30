@@ -537,17 +537,48 @@ class Y86Processor():
         self.output_file.write('\tM_dstM    = 0x%x:\n' % self.M_dstM)
         self.output_file.write('\n')
 
+    def writeback_stage(self):
+        if self.W_dstE != self.RNONE:
+            self.registers[self.W_dstE] = self.W_valE
+
+        if self.W_dstM != self.RNONE:
+            self.registers[self.W_dstM] = self.W_valM
+
+        self.stat = self.SAOK if self.W_stat == self.SBUB else self.W_stat
+
+    def writeback_write(self):
+        W_stall = self.W_stat in (self.SADR, self.SINS, self.SHLT)
+        if W_stall:
+            return
+        self.W_stat  = self.m_stat
+        self.W_icode = self.M_icode
+        self.W_ifun  = self.M_ifun
+        self.W_valE  = self.M_valE
+        self.W_valM  = self.m_valM
+        self.W_dstE  = self.M_dstE
+        self.W_dstM  = self.M_dstM
+
+    def writeback_log(self):
+        self.output_file.write('WRITE BACK:\n')
+        self.output_file.write('\tW_icode   = 0x%x:\n' % self.W_icode)
+        self.output_file.write('\tW_valE    = 0x%08x:\n' % self.W_valE)
+        self.output_file.write('\tW_valM    = 0x%08x:\n' % self.W_valM)
+        self.output_file.write('\tW_dstE    = 0x%x:\n' % self.W_dstE)
+        self.output_file.write('\tW_dstM    = 0x%x:\n' % self.W_dstM)
+        self.output_file.write('\n')
 
     def run_processor(self):
         for i in range(100):
             self.cycle += 1
             self.cycle_log()
 
+            self.writeback_write()
             self.memory_write()
             self.execute_write()
             self.decode_write()
             self.fetch_write()
 
+            self.writeback_stage()
             self.fetch_stage()
             self.decode_stage()
             self.execute_stage()
@@ -557,6 +588,7 @@ class Y86Processor():
             self.decode_log()
             self.execute_log()
             self.memory_log()
+            self.writeback_log()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
