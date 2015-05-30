@@ -412,6 +412,12 @@ class Y86Processor():
             self.conditions['SF'] = 1 if alu_result < 0 else 0
             self.conditions['OF'] = 1 if (alu_result > TMAX) or (alu_result < TMIN) else 0
 
+        if (alu_result > TMAX):
+            alu_result = alu_result - TMAX - 1 + TMIN
+
+        if (alu_result < TMIN):
+            alu_result = TMAX + alu_result - TMIN + 1
+
         if self.E_icode in (self.IJXX, self.IRRMOVL):
             zf = self.conditions['ZF']
             sf = self.conditions['SF']
