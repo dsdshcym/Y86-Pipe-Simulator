@@ -513,7 +513,7 @@ class Y86Processor():
             try:
                 if self.mem_addr in self.memro or self.mem_addr < 0:
                     raise Exception
-                self.memory[mem_addr] = self.M_valA
+                self.memory[self.mem_addr] = self.M_valA
             except:
                 self.dmem_error = True
 
@@ -604,6 +604,10 @@ class Y86Processor():
             self.execute_log()
             self.memory_log()
             self.writeback_log()
+
+            if self.stat != 'AOK' and self.stat != 'BUB':
+                print self.stat
+                break
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
