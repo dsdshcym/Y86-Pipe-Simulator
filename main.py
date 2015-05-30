@@ -149,6 +149,10 @@ class Y86Processor():
             'OF': 0,
         }
 
+        # Memory
+        self.memory = {}
+        self.memro = []
+
         self.bin_code = bin_code
         self.output_file = output_file
         self.addr_len = len(self.bin_code) / 2 - 1
@@ -461,11 +465,85 @@ class Y86Processor():
         self.output_file.write('\tE_srcB    = 0x%x:\n' % self.E_srcB)
         self.output_file.write('\n')
 
+    def memory_stage(self):
+        ## Intermediate Values in Memory Stage
+        self.m_valM = 0x0
+        self.m_stat = self.SBUB
+        self.mem_addr = 0x0
+        self.m_read = False
+        self.dmem_error = False
+
+        if self.M_icode in (self.IRMMOVL, self.IPUSHL, self.ICALL, self.IMRMOVL):
+            self.mem_addr = self.M_valE
+        elif self.M_icode in (self.IPOPL, self.IRET):
+            self.mem_addr = self.M_valA
+
+        mem_read = self.M_icode in (self.IMRMOVL, self.IPOPL, self.IRET)
+
+        mem_write = self.M_icode in (self.IRMMOVL, self.IPUSHL, self.ICALL)
+
+        if mem_read:
+            try:
+                if self.mem_addr not in self.memory:
+                    addr = self.mem_addr * 2
+                    self.memory[self.mem_addr] = self.endian_parser(self.bin_code[addr: addr+8])
+                    self.memro.append(self.mem_addr)
+                self.m_valM = self.memory[self.mem_addr]
+                self.m_read = True
+            except:
+                self.dmem_error = True
+
+        if mem_write:
+            try:
+                if self.mem_addr in self.memro or self.mem_addr < 0:
+                    raise Exception
+                self.memory[mem_addr] = self.M_valA
+            except:
+                self.dmem_error = True
+
+        self.m_stat = self.SADR if self.dmem_error else self.M_stat
+
+    def memory_write(self):
+        M_bubble = self.m_stat in (self.SADR, self.SINS, self.SHLT) or \
+                   self.W_stat in (self.SADR, self.SINS, self.SHLT)
+
+        if M_bubble:
+            self.M_stat  = self.SBUB
+            self.M_icode = self.INOP
+            self.M_ifun  = self.FNONE
+            self.M_Cnd   = False
+            self.M_valE  = 0x0
+            self.M_valA  = 0x0
+            self.M_dstE  = self.RNONE
+            self.M_dstM  = self.RNONE
+            return
+
+        self.M_stat  = self.E_stat
+        self.M_icode = self.E_icode
+        self.M_ifun  = self.E_ifun
+        self.M_Cnd   = self.e_Cnd
+        self.M_valE  = self.e_valE
+        self.M_valA  = self.E_valA
+        self.M_dstE  = self.e_dstE
+        self.M_dstM  = self.E_dstM
+
+    def memory_log(self):
+        self.output_file.write('MEMORY:\n')
+        self.output_file.write('\tM_icode   = 0x%x:\n' % self.M_icode)
+        self.output_file.write('\tM_Bch     = %s:\n' % str(self.M_Cnd).lower())
+        self.output_file.write('\tM_valE    = 0x%08x:\n' % self.M_valE)
+        self.output_file.write('\tM_valA    = 0x%08x:\n' % self.M_valA)
+        self.output_file.write('\tM_dstE    = 0x%x:\n' % self.M_dstE)
+        self.output_file.write('\tM_dstM    = 0x%x:\n' % self.M_dstM)
+        self.output_file.write('\n')
+
+
     def run_processor(self):
         for i in range(100):
             self.cycle += 1
             self.cycle_log()
 
+            self.memory_write()
             self.execute_write()
             self.decode_write()
             self.fetch_write()
@@ -473,10 +551,12 @@ class Y86Processor():
             self.fetch_stage()
             self.decode_stage()
             self.execute_stage()
+            self.memory_stage()
 
             self.fetch_log()
             self.decode_log()
             self.execute_log()
+            self.memory_log()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")
