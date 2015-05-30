@@ -79,6 +79,8 @@ class Y86Processor():
         self.D_valC = 0x0
         self.D_valP = 0x0
 
+        self.D_next_bub = False # Add this to correct the Decode bubble
+
         ## Intermediate Values in Decode Stage
         self.d_srcA = self.RNONE
         self.d_srcB = self.RNONE
@@ -129,6 +131,8 @@ class Y86Processor():
         self.W_valM = 0x0
         self.W_dstE = self.RNONE
         self.W_dstM = self.RNONE
+
+        self.stat = self.SAOK
 
         # Registers initialization
         self.registers = {
@@ -204,7 +208,7 @@ class Y86Processor():
         self.f_ifun = self.FNONE if imem_error else imem_ifun
 
         # Is instruction valid?
-        instr_valid = self.f_ifun in (self.INOP, self.IHALT, self.IRRMOVL, \
+        instr_valid = self.f_icode in (self.INOP, self.IHALT, self.IRRMOVL, \
                                       self.IIRMOVL, self.IRMMOVL, self.IMRMOVL, \
                                       self.IOPL, self.IJXX, self.ICALL, \
                                       self.IRET, self.IPUSHL, self.IPOPL)
@@ -228,11 +232,15 @@ class Y86Processor():
                     if ((self.f_rA not in self.registers) and (self.f_rA != self.RNONE))\
                        or ((self.f_rB not in self.registers) and (self.f_rB != self.RNONE)):
                         raise IndexError
+            except:
+                imem_error = True
+
+            try:
                 if need_valC:
                     self.f_valC = self.endian_parser(self.bin_code[bin_p: bin_p+8])
                     bin_p += 8
                     f_pc += 4
-            except IndexError:
+            except:
                 imem_error = True
 
         self.f_valP = f_pc
@@ -249,13 +257,14 @@ class Y86Processor():
 
     def fetch_write(self):
         F_bubble = False
-        F_stall = (self.IRET in (self.D_icode, self.E_icode, self.M_icode)) or \
-                  ((self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
-                   (self.E_dstM in (self.d_srcA, self.d_srcB)))
+        F_stall = self.E_icode in (self.IMRMOVL, self.IPOPL) and \
+                  self.E_dstM in (self.d_srcA, self.d_srcB) or \
+                  self.IRET in (self.D_icode, self.E_icode, self.M_icode)
+
         if F_stall:
             return
         self.F_predPC = self.f_predPC
-        self.F_stat = self.f_stat
+        self.F_stat = self.SAOK
 
     def fetch_log(self):
         self.output_file.write('FETCH:\n')
@@ -323,11 +332,9 @@ class Y86Processor():
         if D_stall:
             return
 
-        D_bubble = (self.E_icode == self.IJXX and (not self.e_Cnd)) or \
-                   ((not ((self.E_icode in (self.IMRMOVL, self.IPOPL)) \
-                          and (self.E_dstM in (self.d_srcA, self.d_srcB)))) \
-                    and (self.IRET in (self.D_icode, self.E_icode, self.M_icode)))
-        if D_bubble:
+        D_bubble = self.IRET in (self.D_icode, self.E_icode, self.M_icode)
+
+        if D_bubble or self.D_next_bub:
             self.D_icode = self.INOP
             self.D_ifun  = self.FNONE
             self.D_rA    = self.RNONE
@@ -335,7 +342,10 @@ class Y86Processor():
             self.D_valC  = 0x0
             self.D_valP  = 0x0
             self.D_stat  = self.SBUB
+            self.D_next_bub = False
             return
+
+        self.D_next_bub = self.E_icode == self.IJXX and (not self.e_Cnd)
 
         self.D_stat  = self.f_stat
         self.D_icode = self.f_icode
@@ -426,8 +436,8 @@ class Y86Processor():
 
     def execute_write(self):
         E_bubble = (self.E_icode == self.IJXX and not self.e_Cnd) or \
-                   ((self.E_icode in (self.IMRMOVL, self.IPOPL)) and \
-                    (self.E_dstM in (self.d_srcA, self.d_srcB)))
+                   self.E_icode in (self.IMRMOVL, self.IPOPL) and \
+                   self.E_dstM in (self.d_srcA, self.d_srcB)
         if E_bubble:
             self.E_icode = self.INOP
             self.E_ifun  = self.FNONE
@@ -573,16 +583,15 @@ class Y86Processor():
             self.cycle_log()
 
             self.writeback_write()
-            self.memory_write()
-            self.execute_write()
-            self.decode_write()
-            self.fetch_write()
-
             self.writeback_stage()
-            self.fetch_stage()
-            self.decode_stage()
-            self.execute_stage()
+            self.memory_write()
             self.memory_stage()
+            self.execute_write()
+            self.execute_stage()
+            self.decode_write()
+            self.decode_stage()
+            self.fetch_write()
+            self.fetch_stage()
 
             self.fetch_log()
             self.decode_log()
