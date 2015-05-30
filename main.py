@@ -259,7 +259,7 @@ class Y86Processor():
 
     def fetch_log(self):
         self.output_file.write('FETCH:\n')
-        self.output_file.write('\tF_predPC  = 0x%08x\n' % self.F_predPC)
+        self.output_file.write('\tF_predPC \t= 0x%08x\n' % self.F_predPC)
         self.output_file.write('\n')
 
     def decode_stage(self):
@@ -347,12 +347,12 @@ class Y86Processor():
 
     def decode_log(self):
         self.output_file.write('DECODE:\n')
-        self.output_file.write('\tD_icode  	= 0x%x\n' % self.D_icode)
-        self.output_file.write('\tD_ifun    = 0x%x\n' % self.D_ifun)
-        self.output_file.write('\tD_rA      = 0x%x\n' % self.D_rA)
-        self.output_file.write('\tD_rB      = 0x%x\n' % self.D_rB)
-        self.output_file.write('\tD_valC    = 0x%08x\n' % self.D_valC)
-        self.output_file.write('\tD_valP    = 0x%08x\n' % self.D_valP)
+        self.output_file.write('\tD_icode  \t= 0x%x\n' % self.D_icode)
+        self.output_file.write('\tD_ifun   \t= 0x%x\n' % self.D_ifun)
+        self.output_file.write('\tD_rA     \t= 0x%x\n' % self.D_rA)
+        self.output_file.write('\tD_rB     \t= 0x%x\n' % self.D_rB)
+        self.output_file.write('\tD_valC   \t= 0x%08x\n' % self.D_valC)
+        self.output_file.write('\tD_valP   \t= 0x%08x\n' % self.D_valP)
         self.output_file.write('\n')
 
     def execute_stage(self):
@@ -454,15 +454,15 @@ class Y86Processor():
 
     def execute_log(self):
         self.output_file.write('EXECUTE:\n')
-        self.output_file.write('\tE_icode   = 0x%x:\n' % self.E_icode)
-        self.output_file.write('\tE_ifun    = 0x%x:\n' % self.E_ifun)
-        self.output_file.write('\tE_valC    = 0x%08x:\n' % self.E_valC)
-        self.output_file.write('\tE_valA    = 0x%08x:\n' % self.E_valA)
-        self.output_file.write('\tE_valB    = 0x%08x:\n' % self.E_valB)
-        self.output_file.write('\tE_dstE    = 0x%x:\n' % self.E_dstE)
-        self.output_file.write('\tE_dstM    = 0x%x:\n' % self.E_dstM)
-        self.output_file.write('\tE_srcA    = 0x%x:\n' % self.E_srcA)
-        self.output_file.write('\tE_srcB    = 0x%x:\n' % self.E_srcB)
+        self.output_file.write('\tE_icode  \t= 0x%x\n' % self.E_icode)
+        self.output_file.write('\tE_ifun   \t= 0x%x\n' % self.E_ifun)
+        self.output_file.write('\tE_valC   \t= 0x%08x\n' % self.E_valC)
+        self.output_file.write('\tE_valA   \t= 0x%08x\n' % self.E_valA)
+        self.output_file.write('\tE_valB   \t= 0x%08x\n' % self.E_valB)
+        self.output_file.write('\tE_dstE   \t= 0x%x\n' % self.E_dstE)
+        self.output_file.write('\tE_dstM   \t= 0x%x\n' % self.E_dstM)
+        self.output_file.write('\tE_srcA   \t= 0x%x\n' % self.E_srcA)
+        self.output_file.write('\tE_srcB   \t= 0x%x\n' % self.E_srcB)
         self.output_file.write('\n')
 
     def memory_stage(self):
@@ -529,12 +529,12 @@ class Y86Processor():
 
     def memory_log(self):
         self.output_file.write('MEMORY:\n')
-        self.output_file.write('\tM_icode   = 0x%x:\n' % self.M_icode)
-        self.output_file.write('\tM_Bch     = %s:\n' % str(self.M_Cnd).lower())
-        self.output_file.write('\tM_valE    = 0x%08x:\n' % self.M_valE)
-        self.output_file.write('\tM_valA    = 0x%08x:\n' % self.M_valA)
-        self.output_file.write('\tM_dstE    = 0x%x:\n' % self.M_dstE)
-        self.output_file.write('\tM_dstM    = 0x%x:\n' % self.M_dstM)
+        self.output_file.write('\tM_icode  \t= 0x%x\n' % self.M_icode)
+        self.output_file.write('\tM_Bch    \t= %s\n' % str(self.M_Cnd).lower())
+        self.output_file.write('\tM_valE   \t= 0x%08x\n' % self.M_valE)
+        self.output_file.write('\tM_valA   \t= 0x%08x\n' % self.M_valA)
+        self.output_file.write('\tM_dstE   \t= 0x%x\n' % self.M_dstE)
+        self.output_file.write('\tM_dstM   \t= 0x%x\n' % self.M_dstM)
         self.output_file.write('\n')
 
     def writeback_stage(self):
@@ -560,11 +560,11 @@ class Y86Processor():
 
     def writeback_log(self):
         self.output_file.write('WRITE BACK:\n')
-        self.output_file.write('\tW_icode   = 0x%x:\n' % self.W_icode)
-        self.output_file.write('\tW_valE    = 0x%08x:\n' % self.W_valE)
-        self.output_file.write('\tW_valM    = 0x%08x:\n' % self.W_valM)
-        self.output_file.write('\tW_dstE    = 0x%x:\n' % self.W_dstE)
-        self.output_file.write('\tW_dstM    = 0x%x:\n' % self.W_dstM)
+        self.output_file.write('\tW_icode  \t= 0x%x\n' % self.W_icode)
+        self.output_file.write('\tW_valE   \t= 0x%08x\n' % self.W_valE)
+        self.output_file.write('\tW_valM   \t= 0x%08x\n' % self.W_valM)
+        self.output_file.write('\tW_dstE   \t= 0x%x\n' % self.W_dstE)
+        self.output_file.write('\tW_dstM   \t= 0x%x\n' % self.W_dstM)
         self.output_file.write('\n')
 
     def run_processor(self):
