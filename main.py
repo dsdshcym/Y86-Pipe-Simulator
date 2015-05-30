@@ -348,11 +348,11 @@ class Y86Processor():
     def decode_log(self):
         self.output_file.write('DECODE:\n')
         self.output_file.write('\tD_icode  	= 0x%x\n' % self.D_icode)
-        self.output_file.write('\tD_ifun  	= 0x%x\n' % self.D_ifun)
-        self.output_file.write('\tD_rA  	= 0x%x\n' % self.D_rA)
-        self.output_file.write('\tD_rB  	= 0x%x\n' % self.D_rB)
-        self.output_file.write('\tD_valC  	= 0x%08x\n' % self.D_valC)
-        self.output_file.write('\tD_valP  	= 0x%08x\n' % self.D_valP)
+        self.output_file.write('\tD_ifun    = 0x%x\n' % self.D_ifun)
+        self.output_file.write('\tD_rA      = 0x%x\n' % self.D_rA)
+        self.output_file.write('\tD_rB      = 0x%x\n' % self.D_rB)
+        self.output_file.write('\tD_valC    = 0x%08x\n' % self.D_valC)
+        self.output_file.write('\tD_valP    = 0x%08x\n' % self.D_valP)
         self.output_file.write('\n')
 
     def execute_stage(self):
