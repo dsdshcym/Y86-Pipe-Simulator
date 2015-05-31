@@ -166,6 +166,8 @@ class Y86Processor():
     def endian_parser(self, s):
         correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
         ans = int(correct_string, 16)
+        if ans > 0x7fffffff:
+            ans = -((~ans + 1) & 0xffffffff)
         return ans
 
     def cycle_log(self):
