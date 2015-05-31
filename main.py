@@ -608,7 +608,6 @@ class Y86Processor():
             self.writeback_log()
 
             if self.stat != 'AOK' and self.stat != 'BUB':
-                print self.stat
                 break
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
