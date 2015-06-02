@@ -4,12 +4,14 @@ import sys
 import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
                              QFileDialog, QAction, QTextEdit, QMessageBox)
+from processor import Y86Processor
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
         self.init_UI()
+        self.processor = Y86Processor()
 
     def init_UI(self):
         self.init_menubar()
@@ -89,6 +91,7 @@ class MainWindow(QMainWindow):
 
         with f:
             data = f.read()
+            self.processor.set_input_file(f)
             self.src_text.setText(data)
 
     def run(self):
