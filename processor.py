@@ -158,7 +158,6 @@ class Y86Processor():
         self.memro = []
 
         # TODO: set output_file
-        self.output_file = open('asum.out', 'w')
 
         self.cycle = -1
 
@@ -166,6 +165,7 @@ class Y86Processor():
         p = 0x000
         self.bin_code = ''
         for line in fin:
+            print line
             addr, code = get_addr(line), get_code(line)
             bin_len = len(self.bin_code)
             if addr is not None:
@@ -179,8 +179,8 @@ class Y86Processor():
                     self.bin_code += code
         self.addr_len = len(self.bin_code) / 2 - 1
 
-    def set_input_file(self, input_file):
-        self.compile(input_file)
+    def set_input_file(self, data):
+        self.compile(data)
 
     def endian_parser(self, s):
         correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
@@ -605,6 +605,8 @@ class Y86Processor():
         self.output_file.write('\n')
 
     def run_processor(self):
+        self.output_file = open('asum.out', 'w')
+
         for i in range(100):
             self.cycle += 1
             self.cycle_log()
@@ -628,6 +630,8 @@ class Y86Processor():
 
             if self.stat != 'AOK' and self.stat != 'BUB':
                 break
+
+        self.output_file.close()
 
 addr_re = re.compile(r"(?<=0x).*?(?=:)")
 code_re = re.compile(r"(?<=:\s)\w+")

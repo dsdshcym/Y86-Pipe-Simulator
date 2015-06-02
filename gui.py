@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import io
 import sys
 import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
@@ -90,13 +91,16 @@ class MainWindow(QMainWindow):
         f = open(fname, 'r')
 
         with f:
-            data = f.read()
-            self.processor.set_input_file(f)
-            self.src_text.setText(data)
+            data = f.readlines()
+            self.processor.set_input_file(data)
+            self.src_text.setText(''.join(line for line in data))
+
+        f.close()
 
     def run(self):
         print('run')
-        pass
+        self.processor.run_processor()
+        return
 
     def step(self):
         print('step')
