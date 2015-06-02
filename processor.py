@@ -8,7 +8,7 @@ TMAX = 2**31-1
 TMIN = -TMAX -1
 
 class Y86Processor():
-    def __init__(self, bin_code, output_file):
+    def __init__(self):
         # Global constants
 
         ## Symbolic representation of Y86 Instruction Codes
@@ -157,11 +157,32 @@ class Y86Processor():
         self.memory = {}
         self.memro = []
 
-        self.bin_code = bin_code
-        self.output_file = output_file
-        self.addr_len = len(self.bin_code) / 2 - 1
+        # TODO: set output_file
+        self.output_file = open('asum.out', 'w')
 
         self.cycle = -1
+
+    def compile(self, fin):
+        with fin:
+            p = 0x000
+            self.bin_code = ''
+            for line in fin:
+                addr, code = get_addr(line), get_code(line)
+                bin_len = len(self.bin_code)
+                if addr is not None:
+                    addr *= 2
+                    if addr < bin_len:
+                        print("Init Error")
+                        sys.exit(1)
+                    if code is not None:
+                        if addr > bin_len:
+                            self.bin_code += '0' * (addr - bin_len)
+                        self.bin_code += code
+            self.addr_len = len(self.bin_code) / 2 - 1
+        fin.close()
+
+    def set_input_file(self, input_file):
+        self.compile(input_file)
 
     def endian_parser(self, s):
         correct_string = s[6] + s[7] + s[4] + s[5] + s[2] + s[3] + s[0] + s[1]
@@ -625,29 +646,10 @@ def get_code(string):
         return search_result.group(0)
     return None
 
-def init(input_file):
-    fin = open(input_file, 'r')
-    p = 0x000
-    bin_code = ''
-    for line in fin:
-        addr, code = get_addr(line), get_code(line)
-        bin_len = len(bin_code)
-        if addr is not None:
-            addr *= 2
-            if addr < bin_len:
-                print("Init Error")
-                sys.exit(1)
-            if code is not None:
-                if addr > bin_len:
-                    bin_code += '0' * (addr - bin_len)
-                bin_code += code
-    return bin_code
-
 def main():
-    input_file = 'asum.yo'
-    output_file = open('asum.out', 'w')
-    bin_code = init(input_file)
-    processor = Y86Processor(bin_code, output_file)
+    input_file = open('asum.yo', 'r')
+    processor = Y86Processor()
+    processor.set_input_file(input_file)
     processor.run_processor()
 
 main()
