@@ -165,7 +165,6 @@ class Y86Processor():
         p = 0x000
         self.bin_code = ''
         for line in fin:
-            print line
             addr, code = get_addr(line), get_code(line)
             bin_len = len(self.bin_code)
             if addr is not None:
