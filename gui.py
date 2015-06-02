@@ -4,8 +4,36 @@ import io
 import sys
 import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
-                             QFileDialog, QAction, QTextEdit, QMessageBox)
+                             QFileDialog, QAction, QTextEdit, QMessageBox,
+                             QGridLayout, QLabel, QLineEdit, QWidget)
 from processor import Y86Processor
+
+class MainWidget(QWidget):
+
+    def __init__(self):
+        super(MainWidget, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.grid = QGridLayout()
+        self.grid.setSpacing(15)
+
+        self.init_processor_info()
+
+        self.init_textarea()
+
+        self.setLayout(self.grid)
+
+    def init_textarea(self):
+        self.src_text = QTextEdit()
+        self.grid.addWidget(self.src_text, 3, 0, 10, 0)
+
+    def init_processor_info(self):
+        fetch = QLabel('Fetch:')
+        F_predPC = QLabel('F_predPC')
+
+        self.grid.addWidget(fetch, 2, 0)
+        self.grid.addWidget(F_predPC, 3, 0)
 
 class MainWindow(QMainWindow):
 
@@ -15,10 +43,11 @@ class MainWindow(QMainWindow):
         self.processor = Y86Processor()
 
     def init_UI(self):
+        self.main_widget = MainWidget()
+
         self.init_menubar()
 
-        self.src_text = QTextEdit()
-        self.setCentralWidget(self.src_text)
+        self.setCentralWidget(self.main_widget)
 
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 800
