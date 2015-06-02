@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 import sys
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QApplication, QFileDialog, QAction
+import re
+from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
+                             QFileDialog, QAction, QTextEdit, QMessageBox)
 
 class MainWindow(QMainWindow):
 
@@ -11,6 +13,9 @@ class MainWindow(QMainWindow):
 
     def init_UI(self):
         self.init_menubar()
+
+        self.src_text = QTextEdit()
+        self.setCentralWidget(self.src_text)
 
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 800
@@ -60,8 +65,31 @@ class MainWindow(QMainWindow):
         processor_menu.addAction(back)
         processor_menu.addAction(reset)
 
+    def show_warning_message(self, string):
+        message_box = QMessageBox()
+        message_box.setText(string)
+        message_box.exec_()
+
     def show_file_dialog(self):
         fname = QFileDialog.getOpenFileName(self, 'Load file', '~')
+        fname = fname[0]
+
+        file_suffix = re.search(r"(?<=\.).*$", fname)
+
+        if not file_suffix:
+            self.show_warning_message('Please choose a .yo file')
+            return
+        else:
+            file_suffix = file_suffix.group(0)
+            if file_suffix != 'yo':
+                self.show_warning_message('Please choose a .yo file')
+                return
+
+        f = open(fname, 'r')
+
+        with f:
+            data = f.read()
+            self.src_text.setText(data)
 
     def run(self):
         print('run')
