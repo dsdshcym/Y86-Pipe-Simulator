@@ -163,23 +163,21 @@ class Y86Processor():
         self.cycle = -1
 
     def compile(self, fin):
-        with fin:
-            p = 0x000
-            self.bin_code = ''
-            for line in fin:
-                addr, code = get_addr(line), get_code(line)
-                bin_len = len(self.bin_code)
-                if addr is not None:
-                    addr *= 2
-                    if addr < bin_len:
-                        print("Init Error")
-                        sys.exit(1)
-                    if code is not None:
-                        if addr > bin_len:
-                            self.bin_code += '0' * (addr - bin_len)
-                        self.bin_code += code
-            self.addr_len = len(self.bin_code) / 2 - 1
-        fin.close()
+        p = 0x000
+        self.bin_code = ''
+        for line in fin:
+            addr, code = get_addr(line), get_code(line)
+            bin_len = len(self.bin_code)
+            if addr is not None:
+                addr *= 2
+                if addr < bin_len:
+                    print("Init Error")
+                    sys.exit(1)
+                if code is not None:
+                    if addr > bin_len:
+                        self.bin_code += '0' * (addr - bin_len)
+                    self.bin_code += code
+        self.addr_len = len(self.bin_code) / 2 - 1
 
     def set_input_file(self, input_file):
         self.compile(input_file)
@@ -650,6 +648,8 @@ def main():
     input_file = open('asum.yo', 'r')
     processor = Y86Processor()
     processor.set_input_file(input_file)
+    input_file.close()
     processor.run_processor()
 
-main()
+if __name__ == '__main__':
+    main()
