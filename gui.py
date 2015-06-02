@@ -17,7 +17,7 @@ class MainWidget(QWidget):
 
     def initUI(self):
         self.grid = QGridLayout()
-        self.grid.setSpacing(15)
+        self.grid.setSpacing(20)
 
         self.init_processor_info()
 
@@ -125,6 +125,73 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.E_dstM_text, 11, 3)
         self.grid.addWidget(self.E_srcA_text, 11, 5)
         self.grid.addWidget(self.E_srcB_text, 11, 7)
+
+        memory = QLabel('Memory:')
+        M_icode = QLabel('M_icode:')
+        M_Bch   = QLabel('M_Bch:')
+        M_valE  = QLabel('M_valE:')
+        M_valA  = QLabel('M_valA:')
+        M_dstE  = QLabel('M_dstE:')
+        M_dstM  = QLabel('M_dstM:')
+
+        self.M_icode_text = QLineEdit()
+        self.M_Bch_text   = QLineEdit()
+        self.M_valE_text  = QLineEdit()
+        self.M_valA_text  = QLineEdit()
+        self.M_dstE_text  = QLineEdit()
+        self.M_dstM_text  = QLineEdit()
+
+        self.M_icode_text.setReadOnly(True)
+        self.M_Bch_text.setReadOnly(True)
+        self.M_valE_text.setReadOnly(True)
+        self.M_valA_text.setReadOnly(True)
+        self.M_dstE_text.setReadOnly(True)
+        self.M_dstM_text.setReadOnly(True)
+
+        self.grid.addWidget(memory, 12, 0)
+        self.grid.addWidget(M_icode, 13, 0)
+        self.grid.addWidget(M_Bch, 13, 2)
+        self.grid.addWidget(M_valE, 14, 0)
+        self.grid.addWidget(M_valA, 14, 2)
+        self.grid.addWidget(M_dstE, 15, 0)
+        self.grid.addWidget(M_dstM, 15, 2)
+        self.grid.addWidget(self.M_icode_text, 13, 1)
+        self.grid.addWidget(self.M_Bch_text, 13, 3)
+        self.grid.addWidget(self.M_valE_text, 14, 1)
+        self.grid.addWidget(self.M_valA_text, 14, 3)
+        self.grid.addWidget(self.M_dstE_text, 15, 1)
+        self.grid.addWidget(self.M_dstM_text, 15, 3)
+
+        write_back = QLabel('Write Back:')
+        W_icode = QLabel('W_icode:')
+        W_valE  = QLabel('W_valE:')
+        W_valM  = QLabel('W_valM:')
+        W_dstE  = QLabel('W_dstE:')
+        W_dstM  = QLabel('W_dstM:')
+
+        self.W_icode_text = QLineEdit()
+        self.W_valE_text  = QLineEdit()
+        self.W_valM_text  = QLineEdit()
+        self.W_dstE_text  = QLineEdit()
+        self.W_dstM_text  = QLineEdit()
+
+        self.W_icode_text.setReadOnly(True)
+        self.W_valE_text.setReadOnly(True)
+        self.W_valM_text.setReadOnly(True)
+        self.W_dstE_text.setReadOnly(True)
+        self.W_dstM_text.setReadOnly(True)
+
+        self.grid.addWidget(write_back, 16, 0)
+        self.grid.addWidget(W_icode, 17, 0)
+        self.grid.addWidget(W_valE, 18, 0)
+        self.grid.addWidget(W_valM, 18, 2)
+        self.grid.addWidget(W_dstE, 19, 0)
+        self.grid.addWidget(W_dstM, 19, 2)
+        self.grid.addWidget(self.W_icode_text, 17, 1)
+        self.grid.addWidget(self.W_valE_text, 18, 1)
+        self.grid.addWidget(self.W_valM_text, 18, 3)
+        self.grid.addWidget(self.W_dstE_text, 19, 1)
+        self.grid.addWidget(self.W_dstM_text, 19, 3)
 
     def show_warning_message(self, string):
         message_box = QMessageBox()
