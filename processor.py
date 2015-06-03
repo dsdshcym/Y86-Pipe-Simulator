@@ -163,6 +163,8 @@ class Y86Processor():
 
         self.cycle = -1
 
+        self.log = []
+
     def compile(self, fin):
         p = 0x000
         self.bin_code = ''
@@ -289,9 +291,11 @@ class Y86Processor():
         self.F_stat = self.SAOK
 
     def fetch_log(self):
+        F_predPC = special_hex(self.F_predPC)
         self.output_file.write('FETCH:\n')
-        self.output_file.write('\tF_predPC \t= 0x%08x\n' % self.F_predPC)
+        self.output_file.write('\tF_predPC \t= %s\n' % F_predPC)
         self.output_file.write('\n')
+        self.log[self.cycle]['F_predPC'] = F_predPC
 
     def decode_stage(self):
         ## Intermediate Values in Decode Stage
@@ -378,14 +382,26 @@ class Y86Processor():
         self.D_valP  = self.f_valP
 
     def decode_log(self):
+        D_icode = special_hex(self.D_icode)
+        D_ifun = special_hex(self.D_ifun)
+        D_rA = special_hex(self.D_rA)
+        D_rB = special_hex(self.D_rB)
+        D_valC = special_hex(self.D_valC, True)
+        D_valP = special_hex(self.D_valP, True)
         self.output_file.write('DECODE:\n')
-        self.output_file.write('\tD_icode  \t= 0x%x\n' % self.D_icode)
-        self.output_file.write('\tD_ifun   \t= 0x%x\n' % self.D_ifun)
-        self.output_file.write('\tD_rA     \t= 0x%x\n' % self.D_rA)
-        self.output_file.write('\tD_rB     \t= 0x%x\n' % self.D_rB)
-        self.output_file.write('\tD_valC   \t= 0x%08x\n' % self.D_valC)
-        self.output_file.write('\tD_valP   \t= 0x%08x\n' % self.D_valP)
+        self.output_file.write('\tD_icode  \t= %s\n' % D_icode)
+        self.output_file.write('\tD_ifun   \t= %s\n' % D_ifun)
+        self.output_file.write('\tD_rA     \t= %s\n' % D_rA)
+        self.output_file.write('\tD_rB     \t= %s\n' % D_rB)
+        self.output_file.write('\tD_valC   \t= %s\n' % D_valC)
+        self.output_file.write('\tD_valP   \t= %s\n' % D_valP)
         self.output_file.write('\n')
+        self.log[self.cycle]['D_icode'] = D_icode
+        self.log[self.cycle]['D_ifun'] = D_ifun
+        self.log[self.cycle]['D_rA'] = D_rA
+        self.log[self.cycle]['D_rB'] = D_rB
+        self.log[self.cycle]['D_valC'] = D_valC
+        self.log[self.cycle]['D_valP'] = D_valP
 
     def execute_stage(self):
         self.e_valE = 0x0
@@ -491,17 +507,35 @@ class Y86Processor():
         self.E_srcB  = self.d_srcB
 
     def execute_log(self):
+        E_icode = special_hex(self.E_icode)
+        E_ifun = special_hex(self.E_ifun)
+        E_valC = special_hex(self.E_valC, True)
+        E_valA = special_hex(self.E_valA, True)
+        E_valB = special_hex(self.E_valB, True)
+        E_dstE = special_hex(self.E_dstE)
+        E_dstM = special_hex(self.E_dstM)
+        E_srcA = special_hex(self.E_srcA)
+        E_srcB = special_hex(self.E_srcB)
         self.output_file.write('EXECUTE:\n')
-        self.output_file.write('\tE_icode  \t= 0x%x\n' % self.E_icode)
-        self.output_file.write('\tE_ifun   \t= 0x%x\n' % self.E_ifun)
-        self.output_file.write('\tE_valC   \t= 0x%08x\n' % self.E_valC)
-        self.output_file.write('\tE_valA   \t= 0x%08x\n' % self.E_valA)
-        self.output_file.write('\tE_valB   \t= 0x%08x\n' % self.E_valB)
-        self.output_file.write('\tE_dstE   \t= 0x%x\n' % self.E_dstE)
-        self.output_file.write('\tE_dstM   \t= 0x%x\n' % self.E_dstM)
-        self.output_file.write('\tE_srcA   \t= 0x%x\n' % self.E_srcA)
-        self.output_file.write('\tE_srcB   \t= 0x%x\n' % self.E_srcB)
+        self.output_file.write('\tE_icode  \t= %s\n' % E_icode)
+        self.output_file.write('\tE_ifun   \t= %s\n' % E_ifun)
+        self.output_file.write('\tE_valC   \t= %s\n' % E_valC)
+        self.output_file.write('\tE_valA   \t= %s\n' % E_valA)
+        self.output_file.write('\tE_valB   \t= %s\n' % E_valB)
+        self.output_file.write('\tE_dstE   \t= %s\n' % E_dstE)
+        self.output_file.write('\tE_dstM   \t= %s\n' % E_dstM)
+        self.output_file.write('\tE_srcA   \t= %s\n' % E_srcA)
+        self.output_file.write('\tE_srcB   \t= %s\n' % E_srcB)
         self.output_file.write('\n')
+        self.log[self.cycle]['E_icode'] = E_icode
+        self.log[self.cycle]['E_ifun'] = E_ifun
+        self.log[self.cycle]['E_valC'] = E_valC
+        self.log[self.cycle]['E_valA'] = E_valA
+        self.log[self.cycle]['E_valB'] = E_valB
+        self.log[self.cycle]['E_dstE'] = E_dstE
+        self.log[self.cycle]['E_dstM'] = E_dstM
+        self.log[self.cycle]['E_srcA'] = E_srcA
+        self.log[self.cycle]['E_srcB'] = E_srcB
 
     def memory_stage(self):
         ## Intermediate Values in Memory Stage
@@ -566,14 +600,26 @@ class Y86Processor():
         self.M_dstM  = self.E_dstM
 
     def memory_log(self):
+        M_icode = special_hex(self.M_icode)
+        M_Bch = special_hex(self.M_Cnd)
+        M_valE = special_hex(self.M_valE, True)
+        M_valA = special_hex(self.M_valA, True)
+        M_dstE = special_hex(self.M_dstE)
+        M_dstM = special_hex(self.M_dstM)
         self.output_file.write('MEMORY:\n')
-        self.output_file.write('\tM_icode  \t= 0x%x\n' % self.M_icode)
-        self.output_file.write('\tM_Bch    \t= %s\n' % str(self.M_Cnd).lower())
-        self.output_file.write('\tM_valE   \t= 0x%08x\n' % self.M_valE)
-        self.output_file.write('\tM_valA   \t= 0x%08x\n' % self.M_valA)
-        self.output_file.write('\tM_dstE   \t= 0x%x\n' % self.M_dstE)
-        self.output_file.write('\tM_dstM   \t= 0x%x\n' % self.M_dstM)
+        self.output_file.write('\tM_icode  \t= %s\n' % M_icode)
+        self.output_file.write('\tM_Bch    \t= %s\n' % M_Bch)
+        self.output_file.write('\tM_valE   \t= %s\n' % M_valE)
+        self.output_file.write('\tM_valA   \t= %s\n' % M_valA)
+        self.output_file.write('\tM_dstE   \t= %s\n' % M_dstE)
+        self.output_file.write('\tM_dstM   \t= %s\n' % M_dstM)
         self.output_file.write('\n')
+        self.log[self.cycle]['M_icode'] = M_icode
+        self.log[self.cycle]['M_Bch'] = M_Bch
+        self.log[self.cycle]['M_valE'] = M_valE
+        self.log[self.cycle]['M_valA'] = M_valA
+        self.log[self.cycle]['M_dstE'] = M_dstE
+        self.log[self.cycle]['M_dstM'] = M_dstM
 
     def writeback_stage(self):
         if self.W_dstE != self.RNONE:
@@ -597,13 +643,25 @@ class Y86Processor():
         self.W_dstM  = self.M_dstM
 
     def writeback_log(self):
+        W_icode = special_hex(self.W_icode)
+        W_valE = special_hex(self.W_valE, True)
+        W_valM = special_hex(self.W_valM, True)
+        W_dstE = special_hex(self.W_dstE)
+        W_dstM = special_hex(self.W_dstM)
+
         self.output_file.write('WRITE BACK:\n')
-        self.output_file.write('\tW_icode  \t= 0x%x\n' % self.W_icode)
-        self.output_file.write('\tW_valE   \t= 0x%08x\n' % self.W_valE)
-        self.output_file.write('\tW_valM   \t= 0x%08x\n' % self.W_valM)
-        self.output_file.write('\tW_dstE   \t= 0x%x\n' % self.W_dstE)
-        self.output_file.write('\tW_dstM   \t= 0x%x\n' % self.W_dstM)
+        self.output_file.write('\tW_icode  \t= %s\n' % W_icode)
+        self.output_file.write('\tW_valE   \t= %s\n' % W_valE)
+        self.output_file.write('\tW_valM   \t= %s\n' % W_valM)
+        self.output_file.write('\tW_dstE   \t= %s\n' % W_dstE)
+        self.output_file.write('\tW_dstM   \t= %s\n' % W_dstM)
         self.output_file.write('\n')
+
+        self.log[self.cycle]['W_icode'] = W_icode
+        self.log[self.cycle]['W_valE'] = W_valE
+        self.log[self.cycle]['W_valM'] = W_valM
+        self.log[self.cycle]['W_dstE'] = W_dstE
+        self.log[self.cycle]['W_dstM'] = W_dstM
 
     def run_processor(self):
         self.output_file = open('asum.out', 'w')
@@ -622,6 +680,8 @@ class Y86Processor():
             self.decode_stage()
             self.fetch_write()
             self.fetch_stage()
+
+            self.log.append({})
 
             self.fetch_log()
             self.decode_log()
@@ -648,6 +708,16 @@ def get_code(string):
     if search_result:
         return search_result.group(0)
     return None
+
+def special_hex(x, padding = False):
+    if x < 0:
+        x = (~(-x) + 1) & 0xffffffff
+
+    if padding:
+        ans = "0x%08x" % x
+    ans = "0x%x" % x
+
+    return ans.lower()
 
 def main():
     input_file = open('asum.yo', 'r')
