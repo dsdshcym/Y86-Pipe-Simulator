@@ -9,6 +9,10 @@ TMIN = -TMAX -1
 
 class Y86Processor():
     def __init__(self):
+        self.reset()
+        # TODO: set output_file
+
+    def reset(self):
         # Global constants
 
         ## Symbolic representation of Y86 Instruction Codes
@@ -156,8 +160,6 @@ class Y86Processor():
         # Memory
         self.memory = {}
         self.memro = []
-
-        # TODO: set output_file
 
         self.cycle = -1
 
