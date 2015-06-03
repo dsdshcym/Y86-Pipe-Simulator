@@ -29,7 +29,7 @@ class MainWidget(QWidget):
         self.src_text = QTextEdit()
         self.grid.addWidget(self.src_text, 5, 12, 10, 12)
 
-    def init_processor_info(self):
+    def init_fetch(self):
         fetch = QLabel('Fetch:')
         F_predPC = QLabel('F_predPC:')
         self.F_predPC_text = QLineEdit()
@@ -39,6 +39,8 @@ class MainWidget(QWidget):
         self.grid.addWidget(F_predPC, 3, 0)
         self.grid.addWidget(self.F_predPC_text, 3, 1)
 
+
+    def init_decode(self):
         decode  = QLabel('Decode:')
         D_icode = QLabel('D_icode:')
         D_ifun  = QLabel('D_ifun:')
@@ -74,6 +76,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(D_valP, 7, 2)
         self.grid.addWidget(self.D_valP_text, 7, 3)
 
+    def init_execute(self):
         execute = QLabel('Execute:')
         E_icode = QLabel('E_icode:')
         E_ifun  = QLabel('E_ifun:')
@@ -126,6 +129,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.E_srcA_text, 11, 5)
         self.grid.addWidget(self.E_srcB_text, 11, 7)
 
+    def init_memory(self):
         memory = QLabel('Memory:')
         M_icode = QLabel('M_icode:')
         M_Bch   = QLabel('M_Bch:')
@@ -162,6 +166,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.M_dstE_text, 15, 1)
         self.grid.addWidget(self.M_dstM_text, 15, 3)
 
+    def init_write_back(self):
         write_back = QLabel('Write Back:')
         W_icode = QLabel('W_icode:')
         W_valE  = QLabel('W_valE:')
@@ -192,6 +197,13 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.W_valM_text, 18, 3)
         self.grid.addWidget(self.W_dstE_text, 19, 1)
         self.grid.addWidget(self.W_dstM_text, 19, 3)
+
+    def init_processor_info(self):
+        self.init_fetch()
+        self.init_decode()
+        self.init_execute()
+        self.init_memory()
+        self.init_write_back()
 
     def show_warning_message(self, string):
         message_box = QMessageBox()
