@@ -27,7 +27,8 @@ class MainWidget(QWidget):
 
     def init_textarea(self):
         self.src_text = QTextEdit()
-        self.grid.addWidget(self.src_text, 5, 15, 20, 15)
+        self.src_text.setReadOnly(True)
+        self.grid.addWidget(self.src_text, 20, 0, 20, 0)
 
     def init_fetch(self):
         fetch = QLabel('Fetch:')
