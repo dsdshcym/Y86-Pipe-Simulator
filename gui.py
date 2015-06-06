@@ -6,8 +6,8 @@ import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
                              QFileDialog, QAction, QTextEdit, QMessageBox,
                              QGridLayout, QLabel, QLineEdit, QWidget,
-                             QPushButton)
-from PyQt5.QtCore import QTimer
+                             QPushButton, QInputDialog, QSlider)
+from PyQt5.QtCore import QTimer, Qt
 from processor import Y86Processor
 
 class MainWidget(QWidget):
@@ -58,6 +58,10 @@ class MainWidget(QWidget):
         reset_button = QPushButton('Reset')
         reset_button.clicked.connect(self.reset)
         self.grid.addWidget(reset_button, 25, 20)
+
+        set_interval_button = QPushButton('Interval')
+        set_interval_button.clicked.connect(self.show_set_interval_dialog)
+        self.grid.addWidget(set_interval_button, 26, 20)
 
     def init_fetch(self):
         fetch = QLabel('<b>Fetch:</b>')
@@ -329,6 +333,14 @@ class MainWidget(QWidget):
             self.processor.run_processor()
 
         f.close()
+
+    def show_set_interval_dialog(self):
+        val, ok = QInputDialog.getInt(self, 'Set Running interval', 'Enter the interval value:')
+        if ok:
+            try:
+                self.timer_interval = val
+            except:
+                self.show_warning_message('Invalid value')
 
     def run_helper(self):
         if self.current_step == self.processor.cycle:
