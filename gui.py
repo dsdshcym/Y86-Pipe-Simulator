@@ -331,6 +331,14 @@ class MainWidget(QWidget):
         pass
 
     def back(self):
+        if not self.processor.log:
+            self.show_warning_message('Please choose a .yo file first')
+            return
+        if self.current_step == 0:
+            self.show_warning_message('This is the first cycle')
+            return
+        self.current_step -= 1
+        self.update_processor_info(self.current_step)
         pass
 
     def reset(self):
