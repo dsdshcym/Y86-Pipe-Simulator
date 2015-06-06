@@ -34,7 +34,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.src_text, 20, 0, 20, 0)
 
     def init_fetch(self):
-        fetch = QLabel('Fetch:')
+        fetch = QLabel('<b>Fetch:</b>')
         F_predPC = QLabel('F_predPC:')
         self.F_predPC_text = QLineEdit()
         self.F_predPC_text.setReadOnly(True)
@@ -45,7 +45,7 @@ class MainWidget(QWidget):
 
 
     def init_decode(self):
-        decode  = QLabel('Decode:')
+        decode  = QLabel('<b>Decode:</b>')
         D_icode = QLabel('D_icode:')
         D_ifun  = QLabel('D_ifun:')
         D_rA    = QLabel('D_rA:')
@@ -81,7 +81,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.D_valP_text, 7, 3)
 
     def init_execute(self):
-        execute = QLabel('Execute:')
+        execute = QLabel('<b>Execute:</b>')
         E_icode = QLabel('E_icode:')
         E_ifun  = QLabel('E_ifun:')
         E_valC  = QLabel('E_valC:')
@@ -134,7 +134,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.E_srcB_text, 11, 7)
 
     def init_memory(self):
-        memory = QLabel('Memory:')
+        memory = QLabel('<b>Memory:</b>')
         M_icode = QLabel('M_icode:')
         M_Bch   = QLabel('M_Bch:')
         M_valE  = QLabel('M_valE:')
@@ -171,7 +171,7 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.M_dstM_text, 15, 3)
 
     def init_write_back(self):
-        write_back = QLabel('Write Back:')
+        write_back = QLabel('<b>Write Back:</b>')
         W_icode = QLabel('W_icode:')
         W_valE  = QLabel('W_valE:')
         W_valM  = QLabel('W_valM:')
