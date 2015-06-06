@@ -163,7 +163,12 @@ class Y86Processor():
 
         self.cycle = -1
 
+        self.max_step = 10000
+
         self.log = []
+
+    def set_max_step(self, max_step):
+        self.max_step = max_step
 
     def compile(self, fin):
         p = 0x000
@@ -666,7 +671,7 @@ class Y86Processor():
     def run_processor(self):
         self.output_file = open('asum.out', 'w')
 
-        for i in range(100):
+        for i in range(self.max_step):
             self.cycle += 1
             self.cycle_log()
 
