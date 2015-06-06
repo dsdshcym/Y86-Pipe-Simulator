@@ -6,6 +6,7 @@ import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
                              QFileDialog, QAction, QTextEdit, QMessageBox,
                              QGridLayout, QLabel, QLineEdit, QWidget)
+from PyQt5.QtCore import QTimer
 from processor import Y86Processor
 
 class MainWidget(QWidget):
@@ -14,6 +15,7 @@ class MainWidget(QWidget):
         super(MainWidget, self).__init__()
         self.processor = Y86Processor()
         self.current_step = 0
+        self.timer_interval = 1
         self.initUI()
 
     def initUI(self):
@@ -299,18 +301,30 @@ class MainWidget(QWidget):
 
         f.close()
 
+    def run_helper(self):
+        if self.current_step == self.processor.cycle:
+            self.run_timer.stop()
+            self.show_warning_message('Process finished')
+            return
+        self.current_step += 1
+        self.update_processor_info(self.current_step)
+
     def run(self):
         if not self.processor.log:
             self.show_warning_message('Please choose a .yo file first')
             return
-        for i in range(self.processor.cycle+1):
-            self.update_processor_info(i)
-        self.current_step = self.processor.cycle
+        self.current_step = 0
+        self.run_timer = QTimer()
+        self.run_timer.timeout.connect(self.run_helper)
+        self.run_timer.start(self.timer_interval)
         return
 
     def step(self):
         if not self.processor.log:
             self.show_warning_message('Please choose a .yo file first')
+            return
+        if self.current_step == self.processor.cycle:
+            self.show_warning_message('Process finished')
             return
         self.update_processor_info(self.current_step)
         self.current_step += 1
