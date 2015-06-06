@@ -203,6 +203,9 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.W_dstM_text, 19, 3)
 
     def init_processor_info(self):
+        processor_info = QLabel('<h2>Registers:</h2>')
+        self.grid.addWidget(processor_info, 1, 0)
+
         self.init_fetch()
         self.init_decode()
         self.init_execute()
