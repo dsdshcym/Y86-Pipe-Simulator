@@ -725,7 +725,8 @@ def special_hex(x, padding = False):
 
     if padding:
         ans = "0x%08x" % x
-    ans = "0x%x" % x
+    else:
+        ans = "0x%x" % x
 
     return ans.lower()
 
