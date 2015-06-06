@@ -12,12 +12,12 @@ class MainWidget(QWidget):
 
     def __init__(self):
         super(MainWidget, self).__init__()
-        self.initUI()
         self.processor = Y86Processor()
+        self.initUI()
 
     def initUI(self):
         self.grid = QGridLayout()
-        self.grid.setSpacing(20)
+        self.grid.setSpacing(5)
 
         self.init_processor_info()
 
@@ -27,7 +27,7 @@ class MainWidget(QWidget):
 
     def init_textarea(self):
         self.src_text = QTextEdit()
-        self.grid.addWidget(self.src_text, 5, 12, 10, 12)
+        self.grid.addWidget(self.src_text, 5, 15, 20, 15)
 
     def init_fetch(self):
         fetch = QLabel('Fetch:')
