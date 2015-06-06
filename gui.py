@@ -371,6 +371,9 @@ class MainWidget(QWidget):
         pass
 
     def reset(self):
+        if not self.processor.log:
+            self.show_warning_message('Please choose a .yo file first')
+            return
         self.current_step = 0
         self.update_processor_info(self.current_step)
         pass
