@@ -326,8 +326,8 @@ class MainWidget(QWidget):
         if self.current_step == self.processor.cycle:
             self.show_warning_message('Process finished')
             return
-        self.update_processor_info(self.current_step)
         self.current_step += 1
+        self.update_processor_info(self.current_step)
         pass
 
     def back(self):
