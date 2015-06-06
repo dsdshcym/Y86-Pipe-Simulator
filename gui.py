@@ -5,7 +5,8 @@ import sys
 import re
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
                              QFileDialog, QAction, QTextEdit, QMessageBox,
-                             QGridLayout, QLabel, QLineEdit, QWidget)
+                             QGridLayout, QLabel, QLineEdit, QWidget,
+                             QPushButton)
 from PyQt5.QtCore import QTimer
 from processor import Y86Processor
 
@@ -26,6 +27,8 @@ class MainWidget(QWidget):
 
         self.init_textarea()
 
+        self.init_buttons()
+
         self.setLayout(self.grid)
 
     def init_textarea(self):
@@ -33,7 +36,28 @@ class MainWidget(QWidget):
         self.grid.addWidget(asum_code, 20, 0)
         self.src_text = QTextEdit()
         self.src_text.setReadOnly(True)
-        self.grid.addWidget(self.src_text, 21, 0, 20, 0)
+        self.grid.addWidget(self.src_text, 21, 0, 20, 20)
+
+    def init_buttons(self):
+        load_button = QPushButton('Load')
+        load_button.clicked.connect(self.show_file_dialog)
+        self.grid.addWidget(load_button, 21, 20)
+
+        run_button = QPushButton('Run')
+        run_button.clicked.connect(self.run)
+        self.grid.addWidget(run_button, 22, 20)
+
+        step_button = QPushButton('Step')
+        step_button.clicked.connect(self.step)
+        self.grid.addWidget(step_button, 23, 20)
+
+        back_button = QPushButton('Back')
+        back_button.clicked.connect(self.back)
+        self.grid.addWidget(back_button, 24, 20)
+
+        reset_button = QPushButton('Reset')
+        reset_button.clicked.connect(self.reset)
+        self.grid.addWidget(reset_button, 25, 20)
 
     def init_fetch(self):
         fetch = QLabel('<b>Fetch:</b>')
