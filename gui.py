@@ -29,9 +29,11 @@ class MainWidget(QWidget):
         self.setLayout(self.grid)
 
     def init_textarea(self):
+        asum_code = QLabel('<h2>Code:</h2>')
+        self.grid.addWidget(asum_code, 20, 0)
         self.src_text = QTextEdit()
         self.src_text.setReadOnly(True)
-        self.grid.addWidget(self.src_text, 20, 0, 20, 0)
+        self.grid.addWidget(self.src_text, 21, 0, 20, 0)
 
     def init_fetch(self):
         fetch = QLabel('<b>Fetch:</b>')
