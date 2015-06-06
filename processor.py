@@ -9,6 +9,8 @@ TMIN = -TMAX -1
 
 class Y86Processor():
     def __init__(self):
+        self.output_file = open('asum.txt', 'w')
+
         self.reset()
         # TODO: set output_file
 
@@ -669,22 +671,25 @@ class Y86Processor():
         self.log[self.cycle]['W_dstM'] = W_dstM
 
     def run_processor(self):
-        self.output_file = open('asum.out', 'w')
-
         for i in range(self.max_step):
             self.cycle += 1
             self.cycle_log()
 
             self.writeback_write()
             self.writeback_stage()
+
             self.memory_write()
             self.memory_stage()
+
             self.execute_write()
             self.execute_stage()
+
             self.decode_write()
             self.decode_stage()
+
             self.fetch_write()
             self.fetch_stage()
+
 
             self.log.append({})
 
