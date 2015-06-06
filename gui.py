@@ -13,6 +13,7 @@ class MainWidget(QWidget):
     def __init__(self):
         super(MainWidget, self).__init__()
         self.processor = Y86Processor()
+        self.current_step = 0
         self.initUI()
 
     def initUI(self):
@@ -294,24 +295,33 @@ class MainWidget(QWidget):
             data = f.readlines()
             self.processor.set_input_file(data)
             self.src_text.setText(''.join(line for line in data))
+            self.processor.run_processor()
 
         f.close()
 
     def run(self):
-        print('run')
-        self.processor.run_processor()
+        if not self.processor.log:
+            self.show_warning_message('Please choose a .yo file first')
+            return
+        for i in range(self.processor.cycle+1):
+            self.update_processor_info(i)
+        self.current_step = self.processor.cycle
         return
 
     def step(self):
-        print('step')
+        if not self.processor.log:
+            self.show_warning_message('Please choose a .yo file first')
+            return
+        self.update_processor_info(self.current_step)
+        self.current_step += 1
         pass
 
     def back(self):
-        print('back')
         pass
 
     def reset(self):
-        print('reset')
+        self.current_step = 0
+        self.update_processor_info(self.current_step)
         pass
 
 class MainWindow(QMainWindow):
