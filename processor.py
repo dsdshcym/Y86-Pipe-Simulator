@@ -201,8 +201,8 @@ class Y86Processor():
 
     def cycle_log(self):
         self.output_file.write('Cycle_%d\n--------------------\n' % self.cycle)
-        self.log[self.cycle]['condition_code'] = self.conditions
-        self.log[self.cycle]['registers'] = self.registers
+        self.log[self.cycle]['condition_code'] = dict(self.conditions)
+        self.log[self.cycle]['registers'] = dict(self.registers)
 
     def fetch_stage(self):
         ## Intermediate Values in Fetch Stage
