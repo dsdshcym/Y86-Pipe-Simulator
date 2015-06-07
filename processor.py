@@ -201,6 +201,8 @@ class Y86Processor():
 
     def cycle_log(self):
         self.output_file.write('Cycle_%d\n--------------------\n' % self.cycle)
+        self.log[self.cycle]['condition_code'] = self.conditions
+        self.log[self.cycle]['registers'] = self.registers
 
     def fetch_stage(self):
         ## Intermediate Values in Fetch Stage
@@ -673,7 +675,6 @@ class Y86Processor():
     def run_processor(self):
         for i in range(self.max_step):
             self.cycle += 1
-            self.cycle_log()
 
             self.writeback_write()
             self.writeback_stage()
@@ -693,6 +694,7 @@ class Y86Processor():
 
             self.log.append({})
 
+            self.cycle_log()
             self.fetch_log()
             self.decode_log()
             self.execute_log()
