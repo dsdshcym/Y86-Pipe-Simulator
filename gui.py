@@ -403,12 +403,16 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.main_widget)
 
-        WINDOW_WIDTH = 800
-        WINDOW_HEIGHT = 800
+        WINDOW_WIDTH = 1280
+        WINDOW_HEIGHT = 720
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.center()
-        self.setWindowTitle('Test GUI')
+        self.setWindowTitle('Y86 Pipeline Simulator')
         self.show()
+
+        test = QTextEdit()
+        test.setGeometry(100, 100, 100, 100)
+        test.show()
 
     def center(self):
         screen = QDesktopWidget().screenGeometry()
