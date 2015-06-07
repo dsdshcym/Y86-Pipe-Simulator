@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QApplication,
                              QGridLayout, QLabel, QLineEdit, QWidget,
                              QPushButton, QInputDialog, QSlider)
 from PyQt5.QtCore import QTimer, Qt
-from processor import Y86Processor
+from processor import Y86Processor, special_hex
 
 class MainWidget(QWidget):
 
@@ -254,6 +254,55 @@ class MainWidget(QWidget):
         self.grid.addWidget(OF, 2, 12)
         self.grid.addWidget(self.OF_text, 2, 13)
 
+    def init_register_files(self):
+        register_files = QLabel('<h2>Register File:</h2>')
+        self.grid.addWidget(register_files, 3, 8)
+
+        eax = QLabel('%eax:')
+        ecx = QLabel('%ecx:')
+        edx = QLabel('%edx:')
+        ebx = QLabel('%ebx:')
+        esp = QLabel('%esp:')
+        ebp = QLabel('%ebp:')
+        esi = QLabel('%esi:')
+        edi = QLabel('%edi:')
+
+        self.grid.addWidget(eax, 4, 8)
+        self.grid.addWidget(ecx, 4, 10)
+        self.grid.addWidget(edx, 5, 8)
+        self.grid.addWidget(ebx, 5, 10)
+        self.grid.addWidget(esp, 6, 8)
+        self.grid.addWidget(ebp, 6, 10)
+        self.grid.addWidget(esi, 7, 8)
+        self.grid.addWidget(edi, 7, 10)
+
+        self.eax_text = QLineEdit()
+        self.ecx_text = QLineEdit()
+        self.edx_text = QLineEdit()
+        self.ebx_text = QLineEdit()
+        self.esp_text = QLineEdit()
+        self.ebp_text = QLineEdit()
+        self.esi_text = QLineEdit()
+        self.edi_text = QLineEdit()
+
+        self.eax_text.setReadOnly(True)
+        self.ecx_text.setReadOnly(True)
+        self.edx_text.setReadOnly(True)
+        self.ebx_text.setReadOnly(True)
+        self.esp_text.setReadOnly(True)
+        self.ebp_text.setReadOnly(True)
+        self.esi_text.setReadOnly(True)
+        self.edi_text.setReadOnly(True)
+
+        self.grid.addWidget(self.eax_text, 4, 9)
+        self.grid.addWidget(self.ecx_text, 4, 11)
+        self.grid.addWidget(self.edx_text, 5, 9)
+        self.grid.addWidget(self.ebx_text, 5, 11)
+        self.grid.addWidget(self.esp_text, 6, 9)
+        self.grid.addWidget(self.ebp_text, 6, 11)
+        self.grid.addWidget(self.esi_text, 7, 9)
+        self.grid.addWidget(self.edi_text, 7, 11)
+
     def init_processor_info(self):
         processor_info = QLabel('<h2>Registers:</h2>')
         self.grid.addWidget(processor_info, 1, 0)
@@ -270,6 +319,7 @@ class MainWidget(QWidget):
         self.init_write_back()
 
         self.init_cpu_conditions()
+        self.init_register_files()
 
         self.update_processor_info()
 
@@ -279,6 +329,14 @@ class MainWidget(QWidget):
             self.ZF_text.setText('0')
             self.SF_text.setText('0')
             self.OF_text.setText('0')
+            self.eax_text.setText('0x00000000')
+            self.ecx_text.setText('0x00000000')
+            self.edx_text.setText('0x00000000')
+            self.ebx_text.setText('0x00000000')
+            self.esp_text.setText('0x00000000')
+            self.ebp_text.setText('0x00000000')
+            self.esi_text.setText('0x00000000')
+            self.edi_text.setText('0x00000000')
             self.F_predPC_text.setText('0x0')
             self.D_icode_text.setText('0x0')
             self.D_ifun_text.setText('0x0')
@@ -312,6 +370,14 @@ class MainWidget(QWidget):
                 self.ZF_text.setText(str(self.processor.log[step]['condition_code']['ZF']))
                 self.SF_text.setText(str(self.processor.log[step]['condition_code']['SF']))
                 self.OF_text.setText(str(self.processor.log[step]['condition_code']['OF']))
+                self.eax_text.setText(special_hex(self.processor.log[step]['registers'][0]))
+                self.ecx_text.setText(special_hex(self.processor.log[step]['registers'][1]))
+                self.edx_text.setText(special_hex(self.processor.log[step]['registers'][2]))
+                self.ebx_text.setText(special_hex(self.processor.log[step]['registers'][3]))
+                self.esp_text.setText(special_hex(self.processor.log[step]['registers'][4]))
+                self.ebp_text.setText(special_hex(self.processor.log[step]['registers'][5]))
+                self.esi_text.setText(special_hex(self.processor.log[step]['registers'][6]))
+                self.edi_text.setText(special_hex(self.processor.log[step]['registers'][7]))
                 self.F_predPC_text.setText(self.processor.log[step]['F_predPC'])
                 self.D_icode_text.setText(self.processor.log[step]['D_icode'])
                 self.D_ifun_text.setText(self.processor.log[step]['D_ifun'])
