@@ -235,16 +235,23 @@ class MainWidget(QWidget):
     def init_processor_info(self):
         processor_info = QLabel('<h2>Registers:</h2>')
         self.grid.addWidget(processor_info, 1, 0)
+        cycle = QLabel('<b>Cycle:</b>')
+        self.cycle_text = QLineEdit()
+        self.cycle_text.setReadOnly(True)
+        self.grid.addWidget(cycle, 0, 0)
+        self.grid.addWidget(self.cycle_text, 0, 1)
 
         self.init_fetch()
         self.init_decode()
         self.init_execute()
         self.init_memory()
         self.init_write_back()
+
         self.update_processor_info()
 
     def update_processor_info(self, step=-1):
         if step == -1:
+            self.cycle_text.setText('0')
             self.F_predPC_text.setText('0x0')
             self.D_icode_text.setText('0x0')
             self.D_ifun_text.setText('0x0')
@@ -274,6 +281,7 @@ class MainWidget(QWidget):
             self.W_dstM_text.setText('0x8')
         else:
             try:
+                self.cycle_text.setText(str(step))
                 self.F_predPC_text.setText(self.processor.log[step]['F_predPC'])
                 self.D_icode_text.setText(self.processor.log[step]['D_icode'])
                 self.D_ifun_text.setText(self.processor.log[step]['D_ifun'])
