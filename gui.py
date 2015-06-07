@@ -232,6 +232,28 @@ class MainWidget(QWidget):
         self.grid.addWidget(self.W_dstE_text, 19, 1)
         self.grid.addWidget(self.W_dstM_text, 19, 3)
 
+    def init_cpu_conditions(self):
+        conditions = QLabel('<h2>Conditions:</h2>')
+        self.grid.addWidget(conditions, 1, 8)
+
+        ZF = QLabel('ZF:')
+        SF = QLabel('SF:')
+        OF = QLabel('OF:')
+
+        self.ZF_text = QLineEdit()
+        self.SF_text = QLineEdit()
+        self.OF_text = QLineEdit()
+        self.ZF_text.setReadOnly(True)
+        self.SF_text.setReadOnly(True)
+        self.OF_text.setReadOnly(True)
+
+        self.grid.addWidget(ZF, 2, 8)
+        self.grid.addWidget(self.ZF_text, 2, 9)
+        self.grid.addWidget(SF, 2, 10)
+        self.grid.addWidget(self.SF_text, 2, 11)
+        self.grid.addWidget(OF, 2, 12)
+        self.grid.addWidget(self.OF_text, 2, 13)
+
     def init_processor_info(self):
         processor_info = QLabel('<h2>Registers:</h2>')
         self.grid.addWidget(processor_info, 1, 0)
@@ -247,11 +269,16 @@ class MainWidget(QWidget):
         self.init_memory()
         self.init_write_back()
 
+        self.init_cpu_conditions()
+
         self.update_processor_info()
 
     def update_processor_info(self, step=-1):
         if step == -1:
             self.cycle_text.setText('0')
+            self.ZF_text.setText('0')
+            self.SF_text.setText('0')
+            self.OF_text.setText('0')
             self.F_predPC_text.setText('0x0')
             self.D_icode_text.setText('0x0')
             self.D_ifun_text.setText('0x0')
@@ -282,6 +309,9 @@ class MainWidget(QWidget):
         else:
             try:
                 self.cycle_text.setText(str(step))
+                self.ZF_text.setText(str(self.processor.log[step]['condition_code']['ZF']))
+                self.SF_text.setText(str(self.processor.log[step]['condition_code']['SF']))
+                self.OF_text.setText(str(self.processor.log[step]['condition_code']['OF']))
                 self.F_predPC_text.setText(self.processor.log[step]['F_predPC'])
                 self.D_icode_text.setText(self.processor.log[step]['D_icode'])
                 self.D_ifun_text.setText(self.processor.log[step]['D_ifun'])
