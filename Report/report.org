@@ -2,3 +2,352 @@
 #+Author: 陈一鸣 12307130174
 #+LATEX_HEADER: \usepackage{xeCJK}
 #+LATEX_HEADER: \setCJKmainfont{Hiragino Sans GB}
+* 需求分析
+** 基本功能
+实现一个 Y86 流水线模拟器，以汇编代码为输入，运行过程中的寄存器值为输出，具体要
+求如下：
+*** 输入
+1. 文本文件，后缀为 ".yo"
+2. 包含了需要被模拟执行的Y86指令序列
+3. 文件由若干行组成，每行的格式为
+
+   #+BEGIN_EXAMPLE
+     [十六进制指令地址:][十六进制机器指令]  |  [注释]
+
+     如：
+
+     0x006 : 308700010000 |  irmovl 0x100, %ebp #Set up base pointer
+   #+END_EXAMPLE
+*** 输出
+1. 文本文件，后缀为 ".txt"
+2. 包含模拟器执行时，每个时钟周期的流水线寄存器内的十六进制数值
+3. 每个周期输出格式如下：
+
+   #+BEGIN_EXAMPLE
+     Cycle_0
+     --------------------
+     FETCH:
+       F_predPC  = 0x0
+
+     DECODE:
+       D_icode   = 0x0
+       D_ifun    = 0x0
+       D_rA      = 0x8
+       D_rB      = 0x8
+       D_valC    = 0x00000000
+       D_valP    = 0x00000000
+
+     EXECUTE:
+       E_icode   = 0x0
+       E_ifun    = 0x0
+       E_valC    = 0x00000000
+       E_valA    = 0x00000000
+       E_valB    = 0x00000000
+       E_dstE    = 0x8
+       E_dstM    = 0x8
+       E_srcA    = 0x8
+       E_srcB    = 0x8
+
+     MEMORY:
+       M_icode   = 0x0
+       M_Bch     = 0x0
+       M_valE    = 0x00000000
+       M_valA    = 0x00000000
+       M_dstE    = 0x8
+       M_dstM    = 0x8
+
+     WRITE BACK:
+       W_icode   = 0x0
+       W_valE    = 0x00000000
+       W_valM    = 0x00000000
+       W_dstE    = 0x8
+       W_dstM    = 0x8
+   #+END_EXAMPLE
+
+*** Y86 流水线功能
+1. 实现 Y86 指令集中的所有指令
+   1) nop, halt
+   2) rrmovl, irmovl, rmmovl, mrmovl
+   3) addl, subl, andl, xorl
+   4) jmp, jle, jl, je, jne, jge, jg
+   5) call, ret
+   6) pushl, popl
+2. 实现流水线控制逻辑（stall, bubble），避免 Hazard
+3. 限制条件
+   1) 32 位字长
+   2) 小端法
+   3) 指令数据和栈空间不会重叠
+
+详见 /CSAPP 2ed Chapter 4/ ，此略
+** 图形界面
+为 Y86 流水线模拟器加上图形界面
+
+1. 合理布局与设计，在图形界面上显示尽可能多的流水线运行时状态，例如：
+   1) 流水线寄存器
+   2) 组合逻辑块的线路值
+   3) 寄存器堆，运行时内存栈
+   4) 当前时钟周期
+   5) Y86指令
+   6) 流水线控制机制：Forwarding, Stall，Bubble
+   7) …………
+2. 有若干用户控制按钮，可以单步运行，自动运行，重置等。
+3. 美观酷炫，动画效果
+** 非功能需求（质量需求）
+1. 编程语言及框架不限
+2. 软件架构设计
+   1) 高内聚+低耦合
+   2) 面向对象：设计模式+UML
+3. 代码风格
+   1) 合理的函数、变量名
+   2) 良好的注释
+4. 完整的项目文档
+5. 现场PPT报告+演示
+6. 附加功能
+* 架构设计
+** 基本功能 （Y86Processor）
+将基本功能全部封装在一个类 =Y86Processor= 中
+*** 实现功能
+1. 编译汇编代码
+2. 利用编译后的代码模拟 Y86 处理器的执行过程
+   1) Fetch
+   2) Decode
+   3) Execute
+   4) Memory
+   5) Write Back
+3. 按要求输出到输出文件中
+4. 记录过程变量供图形界面使用
+*** 提供接口
+1. =set_input_file()=
+
+   设定输入文件
+
+2. =run_processor()=
+
+   运行 Y86 模拟器
+
+3. =reset()=
+
+   重置到初始状态
+
+4. =set_max_step()=
+
+   设置最大步数，防止出现死循环
+** 图形界面
+*** 实现功能
+1. 显示运行状态
+   1) 流水线寄存器
+   2) 寄存器堆
+   3) 当前时钟周期
+   4) 状态码 （ZF, SF, OF）
+   5) Y86 指令
+2. 控制按钮
+   - Load ::
+            载入汇编代码文件，后缀为 ".yo"
+   - Run ::
+           运行 Y86 模拟器
+   - Reset ::
+             重置 Y86 模拟器
+   - Step ::
+            单步运行
+   - Back ::
+            返回前一步
+   - Interval ::
+                设置运行的速度（即运行状态的更新时间）
+*** 与 Y86Processor 的交互
+
+在图形界面下构造一个 Y86Processor 类的对象，利用 Y86Processor 运行时记录的数据信
+息来对界面状态进行更新，即：先运行 Y86Processor 的 run_processor() 函数，再更新
+界面状态，两者不同步进行
+* 具体实现
+** 编程环境
+1. 语言及框架
+   1) Python 2.7
+   2) PyQt5
+2. 版本控制工具
+
+   Git
+
+3. 操作系统
+   1) OS X 10.10.4 beta
+   2) 提供 Linux 环境配置说明
+   3) 理论上可支持 Windows ，但未实验
+4. 编辑器
+
+   Emacs 24.5
+** 安装运行
+*** 环境配置
+该项目需要 =Python 2.7=, =Qt5=, =PyQt5= 环境，下面给出在 Linux 下的配置方法（在
+Ubuntu 14.04 中测试通过）
+
+如果你使用的是 =apt-get= 包管理器，那么可直接使用 =Linux= branch 下的
+=prepare_linux.sh= 文件来配置 =PyQt5= 环境
+
+注意：该脚本需要 =sudo= 权限
+
+若你使用的是 =yum= 等其他包管理器，请安装好 =Python 2.7=, =Qt5= 后参照下列指令编
+译 =PyQt5=
+
+1. =sip=
+   #+BEGIN_SRC sh
+     wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.7/sip-4.16.7.tar.gz
+     tar -xzf sip-4.16.7.tar.gz
+     cd sip-4.16.7&&python configure.py --platform linux-g++&&make&&sudo make install
+   #+END_SRC
+2. =PyQt=
+   #+BEGIN_SRC sh
+     cd ~/temp
+     wget http://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.4.1/PyQt-gpl-5.4.1.tar.gz
+     tar -xzf PyQt-gpl-5.4.1.tar.gz
+
+     #This step is import or you will recive error on include<python.h>, details can
+     #be found here
+     #http://stackoverflow.com/questions/17698877/fatal-error-while-compiling-pyqt5-python-h-does-not-exist
+     sudo ln -s /usr/include/python2.7 /usr/local/include/python2.7
+
+     cd PyQt-gpl-5.4.1 && python configure.py && sudo make && sudo make install
+   #+END_SRC
+*** 运行
+#+BEGIN_SRC sh
+  python gui.py
+#+END_SRC
+** 代码说明
+*** =processor.py=
+
+实现基本功能，即 Y86Processor 类
+
+1. =main()=
+
+   主函数，用于测试。构造一个 Y86Processor 对象，并将输入文件设为 =asum.yo= 后运
+   行 Y86Processor
+
+2. =special_hex()=
+
+   由于 Python 的 =int= 字长比 32 位大，故在输出时需要进行转换
+
+3. =get_addr()=, =get_code()=
+
+   利用正则表达式从汇编代码中获取地址和指令
+
+4. =Y86Processor=
+   Y86Processor 类，包括：
+   1) Private Functions
+      1) =__init__=
+
+         初始化函数，设定输出文件为 =asum.txt= ，并重置 Y86Processor
+
+      2) =compile=
+
+         编译汇编代码
+
+      3) =endian_parser=
+
+         读取小端数
+
+      4) =cycle_log=
+
+         将 cycle 值按指定格式输出到输出文件中
+
+      5) =xxxxx_stage=
+
+         模拟各阶段的组合电路逻辑，xxxxx 为 fetch, decode, execute, memory,
+         writeback
+
+      6) =xxxxx_write=
+
+         模拟各阶段的寄存器更新，xxxxx 为 fetch, decode, execute, memory,
+         writeback
+
+      7) =xxxxx_log=
+
+         将对应阶段的寄存器值按指定格式输出到输出文件中
+
+   2) Public Functions
+      1) =set_input_file()=
+
+         设定输入文件
+
+      2) =run_processor()=
+
+         运行 Y86 模拟器
+
+      3) =reset()=
+
+         重置到初始状态
+
+      4) =set_max_step()=
+
+         设置最大步数，防止出现死循环
+*** =gui.py=
+
+利用 PyQt5 实现图形界面
+
+1. =MainWindow=
+
+   主窗口，将窗口置于屏幕中心，并初始化菜单栏
+
+2. =MainWidget=
+
+   主窗口的中心控件，初始化状态显示、按钮等，并提供按钮的功能实现
+** 实现效果
+*** 初始界面
+
+[[./img/init.png]]
+
+*** 选择输入文件
+
+[[./img/input.png]]
+
+*** 输入文件只能为 .yo 文件
+
+[[./img/error.png]]
+
+*** 载入文件后
+
+[[./img/loaded.png]]
+
+*** 运行后
+
+[[./img/after_run.png]]
+
+*** 设置运行间隔
+
+[[./img/interval.png]]
+* 反思总结
+在此我必须承认这个 Project 我做得很差，反思原因如下：
+** 编程语言选择
+选择 =Python2.7 + PyQt5= 来实现这个项目是第一个错误，原因有：
+
+- Python 实现相比 C, C++ 更为高级，在实现 CPU 这类底层部件时需要往底层转换，如
+  =special_hex()=
+- 在实现过程中没有利用到很多 Python 提供的库、方法，仍是用 面向过程/C 的思想来
+  写 Python 程序，让选择 Python 失去了意义
+- PyQt5 的 API 极度不完善，几乎每个函数都要查询 C++ 版 Qt5 的 API
+
+目前回过头来看，使用 =Javascript + Html, css= 或者 =C++ + Qt5= 都是更好的方案
+** 前期准备不够
+在前期准备时直接跳过了架构设计这一过程，只打了腹稿就开始写，直接导致了：
+
+- 前后端的分散
+
+  因为思想还是停留在 Web App 的后端处理生成数据，前端获得数据并显示的过程上，这
+  个项目的思想也是这样的，然而架构设计的不好，无法容易地扩展
+
+  更好的方法可能是在 =Y86Processor= 类的基础上实现 GUI ，而不是另外实现
+
+- 类过于复杂庞大
+
+  =processor.py= 和 =gui.py= 中总共就 3 个类，几乎一个类就占了一个代码文件的全部，
+  这与使用全局变量没有了区别，无法发挥面向对象编程的优势
+
+  目前看来，实现 =Y86Processor= 更好的方法是将 fetch, decode, execute 等归到同一
+  个父类，父类中有 write, stage, log 等函数，甚至直接采用抽象工厂设计模式，在
+  =Y86Processor= 中动态构造这些过程对应的对象
+
+- 没有测试
+** 对 Y86 的理解不够
+Python 程序和实际的电路不同，无法实现组合电路的即时变换，以及时序电路的随时钟信
+号变换
+
+这一点是在编程后期才意识到的
+** 总结
+希望下一次实验能做好前期准备，好好做架构工作，以免再写出这次一样的比较失败的项目
