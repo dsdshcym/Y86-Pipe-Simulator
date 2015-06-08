@@ -1,0 +1,4 @@
+#+title: Y86 流水线模拟器
+#+Author: 陈一鸣 12307130174
+#+LATEX_HEADER: \usepackage{xeCJK}
+#+LATEX_HEADER: \setCJKmainfont{Hiragino Sans GB}
